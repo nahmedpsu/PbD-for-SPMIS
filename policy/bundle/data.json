@@ -1,0 +1,2278 @@
+{
+  "catalog": {
+    "attributes": {
+      "address": {
+        "category": "location",
+        "class": "C3",
+        "description": "Structured residential address.",
+        "disclosures": [
+          "exact",
+          "precision:district",
+          "precision:region",
+          "deny"
+        ],
+        "store": "social_registry"
+      },
+      "bank_account": {
+        "category": "financial",
+        "class": "C4",
+        "description": "Beneficiary payment instrument.",
+        "disclosures": [
+          "exact",
+          "token",
+          "deny"
+        ],
+        "store": "payment_reference"
+      },
+      "case_narrative": {
+        "category": "protection",
+        "class": "C4",
+        "description": "Free-text case notes; may contain highly sensitive detail.",
+        "disclosures": [
+          "exact",
+          "deny"
+        ],
+        "store": "program_store"
+      },
+      "contact": {
+        "category": "identity",
+        "class": "C3",
+        "description": "Phone number or e-mail used for notices.",
+        "disclosures": [
+          "exact",
+          "masked",
+          "deny"
+        ],
+        "store": "identity_vault"
+      },
+      "disability_status": {
+        "category": "health",
+        "class": "C4",
+        "description": "Certified disability status code.",
+        "disclosures": [
+          "exact",
+          "assertion:eligible",
+          "deny"
+        ],
+        "store": "social_registry"
+      },
+      "eligibility_outcome": {
+        "category": "program",
+        "class": "C3",
+        "description": "Result of an eligibility determination and its evidence summary.",
+        "disclosures": [
+          "exact",
+          "deny"
+        ],
+        "store": "program_store"
+      },
+      "employment_status": {
+        "category": "socioeconomic",
+        "class": "C3",
+        "description": "Employment status code.",
+        "disclosures": [
+          "exact",
+          "deny"
+        ],
+        "store": "social_registry"
+      },
+      "enrollment_status": {
+        "category": "program",
+        "class": "C3",
+        "description": "Program enrollment state.",
+        "disclosures": [
+          "exact",
+          "deny"
+        ],
+        "store": "program_store"
+      },
+      "entitlement": {
+        "category": "program",
+        "class": "C3",
+        "description": "Benefit entitlement amount and period.",
+        "disclosures": [
+          "exact",
+          "deny"
+        ],
+        "store": "program_store"
+      },
+      "household_size": {
+        "category": "socioeconomic",
+        "class": "C3",
+        "description": "Number of household members.",
+        "disclosures": [
+          "exact",
+          "deny"
+        ],
+        "store": "social_registry"
+      },
+      "income": {
+        "bands": [
+          {
+            "label": "0-99",
+            "max": 100
+          },
+          {
+            "label": "100-249",
+            "max": 250
+          },
+          {
+            "label": "250-499",
+            "max": 500
+          },
+          {
+            "label": "500+",
+            "max": null
+          }
+        ],
+        "category": "socioeconomic",
+        "class": "C4",
+        "description": "Declared or verified monthly household income.",
+        "disclosures": [
+          "exact",
+          "band",
+          "assertion:below_threshold",
+          "deny"
+        ],
+        "store": "social_registry"
+      },
+      "name": {
+        "category": "identity",
+        "class": "C3",
+        "description": "Legal name.",
+        "disclosures": [
+          "exact",
+          "masked",
+          "deny"
+        ],
+        "store": "identity_vault"
+      },
+      "national_id": {
+        "category": "identity",
+        "class": "C4",
+        "description": "Government-issued national identifier used for identity proofing only.",
+        "disclosures": [
+          "exact",
+          "masked",
+          "verify_only",
+          "deny"
+        ],
+        "store": "identity_vault"
+      },
+      "payment_status": {
+        "category": "program",
+        "class": "C3",
+        "description": "Disbursement status, amount and exception reason.",
+        "disclosures": [
+          "exact",
+          "deny"
+        ],
+        "store": "payment_reference"
+      },
+      "vulnerability_attributes": {
+        "category": "protection",
+        "class": "C4",
+        "description": "Protection-related flags (e.g. displaced, orphan, pregnant).",
+        "disclosures": [
+          "exact",
+          "deny"
+        ],
+        "store": "social_registry"
+      }
+    },
+    "lawful_bases": {
+      "consent": "Processing based on recorded, revocable consent of the data subject.",
+      "legal_obligation": "Processing required by another law (e.g. public finance rules).",
+      "public_service_mandate": "Processing necessary to deliver a mandated public service.",
+      "statutory_authority": "Processing required by the social protection statute.",
+      "vital_interest": "Processing to protect life or physical safety."
+    },
+    "policy": {
+      "default_decision": "deny",
+      "device_trust_levels": [
+        "low",
+        "managed",
+        "high"
+      ],
+      "human_roles": [
+        "CITIZEN",
+        "REGISTRATION_OFFICER",
+        "CASE_WORKER",
+        "SUPERVISOR",
+        "GRIEVANCE_OFFICER",
+        "FINANCE_OFFICER",
+        "ANALYST",
+        "PRIVACY_ADMIN",
+        "AUDITOR"
+      ],
+      "low_trust_denies_classes": [
+        "C4"
+      ],
+      "no_export_classes": [
+        "C4"
+      ],
+      "service_roles": [
+        "REGISTRY_SERVICE",
+        "VAULT_SERVICE",
+        "ELIGIBILITY_SERVICE",
+        "BROKER_SERVICE",
+        "PROGRAM_SERVICE",
+        "PAYMENT_SERVICE",
+        "RETENTION_SERVICE",
+        "AUDIT_SERVICE",
+        "BREAKGLASS_SERVICE",
+        "PDP_SERVICE"
+      ]
+    },
+    "programs": {
+      "cash_assistance": {
+        "code": "CASH",
+        "eligibility": {
+          "all_of": [
+            "identity_status",
+            "income_threshold"
+          ]
+        },
+        "eligible_disability_statuses": [
+          "certified_moderate",
+          "certified_severe"
+        ],
+        "entitlement": {
+          "base_amount": 40,
+          "currency": "XSP",
+          "max_amount": 100,
+          "per_member": 10,
+          "period": "monthly"
+        },
+        "income_threshold": 250,
+        "name": "Unconditional Cash Assistance",
+        "purposes": [
+          "registration",
+          "identity_proofing",
+          "eligibility_verification",
+          "external_verification",
+          "enrollment",
+          "case_management",
+          "grievance_handling",
+          "payment_execution",
+          "payment_status_inquiry",
+          "analytics_reporting",
+          "token_resolution",
+          "retention_processing",
+          "emergency_protection"
+        ]
+      },
+      "disability_allowance": {
+        "code": "DISA",
+        "eligibility": {
+          "all_of": [
+            "identity_status",
+            "disability_eligibility",
+            "income_threshold"
+          ]
+        },
+        "eligible_disability_statuses": [
+          "certified_moderate",
+          "certified_severe"
+        ],
+        "entitlement": {
+          "base_amount": 60,
+          "currency": "XSP",
+          "max_amount": 60,
+          "per_member": 0,
+          "period": "monthly"
+        },
+        "income_threshold": 400,
+        "name": "Disability Allowance",
+        "purposes": [
+          "registration",
+          "identity_proofing",
+          "eligibility_verification",
+          "external_verification",
+          "enrollment",
+          "case_management",
+          "grievance_handling",
+          "payment_execution",
+          "payment_status_inquiry",
+          "analytics_reporting",
+          "token_resolution",
+          "retention_processing",
+          "emergency_protection"
+        ]
+      },
+      "school_feeding": {
+        "code": "SCHF",
+        "eligibility": {
+          "all_of": [
+            "identity_status",
+            "residence"
+          ]
+        },
+        "eligible_disability_statuses": [],
+        "entitlement": {
+          "base_amount": 0,
+          "currency": "XSP",
+          "max_amount": 0,
+          "per_member": 0,
+          "period": "in_kind"
+        },
+        "income_threshold": 300,
+        "name": "School Feeding Programme",
+        "purposes": [
+          "registration",
+          "identity_proofing",
+          "eligibility_verification",
+          "external_verification",
+          "enrollment",
+          "grievance_handling",
+          "analytics_reporting",
+          "retention_processing"
+        ]
+      }
+    },
+    "purposes": {
+      "analytics_reporting": {
+        "actions": [
+          "read",
+          "export"
+        ],
+        "allowed_roles": [
+          "ANALYST"
+        ],
+        "description": "Produce de-identified operational statistics.",
+        "lawful_basis": "statutory_authority",
+        "obligations": [
+          "log",
+          "aggregate_only",
+          "k_anonymity:5"
+        ],
+        "release": {
+          "address": "precision:region",
+          "bank_account": "deny",
+          "case_narrative": "deny",
+          "contact": "deny",
+          "disability_status": "assertion:eligible",
+          "employment_status": "exact",
+          "enrollment_status": "exact",
+          "household_size": "exact",
+          "income": "band",
+          "name": "deny",
+          "national_id": "deny",
+          "vulnerability_attributes": "deny"
+        },
+        "requires_relationship": false
+      },
+      "case_management": {
+        "actions": [
+          "read",
+          "write"
+        ],
+        "allowed_roles": [
+          "CASE_WORKER",
+          "SUPERVISOR"
+        ],
+        "description": "Manage an assigned case, including sensitive narratives.",
+        "lawful_basis": "public_service_mandate",
+        "obligations": [
+          "log",
+          "no_export"
+        ],
+        "release": {
+          "address": "exact",
+          "bank_account": "deny",
+          "case_narrative": "exact",
+          "contact": "exact",
+          "disability_status": "exact",
+          "enrollment_status": "exact",
+          "household_size": "exact",
+          "income": "band",
+          "name": "exact",
+          "national_id": "masked",
+          "payment_status": "exact",
+          "vulnerability_attributes": "exact"
+        },
+        "requires_case_assignment": true,
+        "requires_relationship": true
+      },
+      "eligibility_verification": {
+        "actions": [
+          "read"
+        ],
+        "allowed_roles": [
+          "CASE_WORKER",
+          "ELIGIBILITY_SERVICE",
+          "BROKER_SERVICE"
+        ],
+        "description": "Determine whether a person meets program eligibility rules.",
+        "lawful_basis": "statutory_authority",
+        "obligations": [
+          "log",
+          "no_export",
+          "expire_response:24h"
+        ],
+        "release": {
+          "address": "precision:district",
+          "bank_account": "deny",
+          "contact": "deny",
+          "disability_status": "assertion:eligible",
+          "eligibility_outcome": "exact",
+          "employment_status": "exact",
+          "household_size": "exact",
+          "income": "assertion:below_threshold",
+          "name": "deny",
+          "national_id": "verify_only"
+        },
+        "requires_relationship": true
+      },
+      "emergency_protection": {
+        "actions": [
+          "read"
+        ],
+        "allowed_roles": [
+          "CASE_WORKER",
+          "SUPERVISOR"
+        ],
+        "description": "Exceptional access to protect a person at immediate risk. Requires an approved, active, time-bounded break-glass grant naming the subject and the attributes.\n",
+        "lawful_basis": "vital_interest",
+        "obligations": [
+          "log",
+          "alert",
+          "review_required",
+          "no_export"
+        ],
+        "release": {},
+        "requires_break_glass": true,
+        "requires_mfa": true,
+        "requires_relationship": false
+      },
+      "enrollment": {
+        "actions": [
+          "read",
+          "write"
+        ],
+        "allowed_roles": [
+          "CASE_WORKER",
+          "PROGRAM_SERVICE",
+          "ELIGIBILITY_SERVICE"
+        ],
+        "description": "Enrol an eligible person in a program and manage entitlement.",
+        "lawful_basis": "statutory_authority",
+        "obligations": [
+          "log"
+        ],
+        "release": {
+          "eligibility_outcome": "exact",
+          "enrollment_status": "exact",
+          "entitlement": "exact",
+          "household_size": "exact"
+        },
+        "requires_relationship": true
+      },
+      "external_verification": {
+        "actions": [
+          "read"
+        ],
+        "allowed_roles": [
+          "BROKER_SERVICE"
+        ],
+        "description": "Just-in-time resolution of an identifier so that an authoritative external source can be queried for an assertion. The resolved value must never be persisted by the caller.\n",
+        "lawful_basis": "statutory_authority",
+        "obligations": [
+          "log",
+          "no_persist",
+          "no_export"
+        ],
+        "release": {
+          "national_id": "exact"
+        },
+        "requires_relationship": true
+      },
+      "grievance_handling": {
+        "actions": [
+          "read",
+          "write"
+        ],
+        "allowed_roles": [
+          "GRIEVANCE_OFFICER",
+          "CASE_WORKER"
+        ],
+        "description": "Resolve a complaint or appeal lodged by a beneficiary.",
+        "lawful_basis": "public_service_mandate",
+        "obligations": [
+          "log",
+          "no_export"
+        ],
+        "release": {
+          "address": "precision:district",
+          "bank_account": "deny",
+          "contact": "exact",
+          "eligibility_outcome": "exact",
+          "enrollment_status": "exact",
+          "income": "deny",
+          "name": "exact",
+          "national_id": "deny",
+          "payment_status": "exact"
+        },
+        "requires_relationship": true
+      },
+      "identity_proofing": {
+        "actions": [
+          "read",
+          "write"
+        ],
+        "allowed_roles": [
+          "REGISTRATION_OFFICER",
+          "VAULT_SERVICE",
+          "REGISTRY_SERVICE"
+        ],
+        "description": "Verify identity and create or look up the internal person token.",
+        "lawful_basis": "statutory_authority",
+        "obligations": [
+          "log"
+        ],
+        "release": {
+          "name": "masked",
+          "national_id": "verify_only"
+        },
+        "requires_relationship": false
+      },
+      "payment_execution": {
+        "actions": [
+          "read",
+          "write"
+        ],
+        "allowed_roles": [
+          "PAYMENT_SERVICE",
+          "FINANCE_OFFICER"
+        ],
+        "description": "Produce and execute a disbursement instruction through a payment provider.",
+        "lawful_basis": "legal_obligation",
+        "obligations": [
+          "log",
+          "no_export"
+        ],
+        "release": {
+          "bank_account": "token",
+          "enrollment_status": "exact",
+          "entitlement": "exact",
+          "income": "deny",
+          "name": "exact",
+          "national_id": "deny",
+          "payment_status": "exact"
+        },
+        "requires_relationship": true,
+        "role_overrides": {
+          "FINANCE_OFFICER": {
+            "bank_account": "deny",
+            "name": "masked"
+          }
+        }
+      },
+      "payment_status_inquiry": {
+        "actions": [
+          "read"
+        ],
+        "allowed_roles": [
+          "CASE_WORKER",
+          "GRIEVANCE_OFFICER",
+          "PROGRAM_SERVICE"
+        ],
+        "description": "Check the status of a payment without seeing payment credentials.",
+        "lawful_basis": "public_service_mandate",
+        "obligations": [
+          "log"
+        ],
+        "release": {
+          "bank_account": "deny",
+          "entitlement": "exact",
+          "payment_status": "exact"
+        },
+        "requires_relationship": true
+      },
+      "registration": {
+        "actions": [
+          "read",
+          "write"
+        ],
+        "allowed_roles": [
+          "REGISTRATION_OFFICER",
+          "REGISTRY_SERVICE"
+        ],
+        "description": "Capture and maintain registration data for a household or person.",
+        "lawful_basis": "public_service_mandate",
+        "obligations": [
+          "log"
+        ],
+        "release": {
+          "address": "exact",
+          "contact": "exact",
+          "disability_status": "exact",
+          "employment_status": "exact",
+          "household_size": "exact",
+          "income": "exact",
+          "name": "exact",
+          "national_id": "verify_only",
+          "vulnerability_attributes": "exact"
+        },
+        "requires_relationship": false
+      },
+      "retention_processing": {
+        "actions": [
+          "read",
+          "write",
+          "delete"
+        ],
+        "allowed_roles": [
+          "RETENTION_SERVICE"
+        ],
+        "description": "Execute retention expiry actions (archive, anonymise, delete).",
+        "lawful_basis": "legal_obligation",
+        "obligations": [
+          "log"
+        ],
+        "release": {},
+        "requires_relationship": false
+      },
+      "token_resolution": {
+        "actions": [
+          "read"
+        ],
+        "allowed_roles": [
+          "BROKER_SERVICE",
+          "PAYMENT_SERVICE"
+        ],
+        "description": "Resolve an opaque token to direct identifiers for a service that must present them externally.",
+        "lawful_basis": "statutory_authority",
+        "obligations": [
+          "log",
+          "no_persist",
+          "alert"
+        ],
+        "release": {
+          "contact": "exact",
+          "name": "exact",
+          "national_id": "exact"
+        },
+        "requires_relationship": true
+      }
+    },
+    "retention": {
+      "defaults": {
+        "C3": {
+          "end_action": "anonymize",
+          "period_days": 1825
+        },
+        "C4": {
+          "end_action": "delete",
+          "period_days": 1095
+        }
+      },
+      "records": {
+        "audit.event": {
+          "basis": "Audit log retention (placeholder).",
+          "class": "C3",
+          "end_action": "archive",
+          "owner": "Audit/compliance",
+          "period_days": 3650
+        },
+        "breakglass.grant": {
+          "basis": "Exceptional access records are kept for independent audit.",
+          "class": "C3",
+          "end_action": "archive",
+          "owner": "Audit/compliance",
+          "period_days": 3650
+        },
+        "broker.verification_cache": {
+          "basis": "Cached assertions must be re-verified daily.",
+          "class": "C3",
+          "end_action": "delete",
+          "owner": "Data governance",
+          "period_hours": 24
+        },
+        "eligibility.determination": {
+          "basis": "Re-verification cycle; stale determinations must not be reused.",
+          "class": "C3",
+          "end_action": "delete",
+          "owner": "Program manager",
+          "period_days": 730
+        },
+        "identity_vault.identity": {
+          "basis": "Identity statute retention period (placeholder).",
+          "class": "C4",
+          "end_action": "delete",
+          "owner": "Civil registry liaison",
+          "period_days": 3650
+        },
+        "payment_reference.instruction": {
+          "basis": "Public finance record-keeping obligation (placeholder).",
+          "class": "C4",
+          "end_action": "archive",
+          "owner": "Finance",
+          "period_days": 2555
+        },
+        "payment_reference.instrument": {
+          "basis": "Instrument retained only while an enrollment is active plus one year.",
+          "class": "C4",
+          "end_action": "delete",
+          "owner": "Finance",
+          "period_days": 365
+        },
+        "program_store.enrollment": {
+          "basis": "Program audit requirements (placeholder).",
+          "class": "C3",
+          "end_action": "archive",
+          "owner": "Program manager",
+          "period_days": 2555
+        },
+        "social_registry.person": {
+          "basis": "Social registry regulation (placeholder).",
+          "class": "C3",
+          "end_action": "anonymize",
+          "owner": "Registry data owner",
+          "period_days": 1825
+        }
+      }
+    },
+    "sharing": {
+      "checks": {
+        "disability_eligibility": "disability_status",
+        "identity_status": "national_id",
+        "income_band": "income",
+        "income_threshold": "income",
+        "residence": "address"
+      },
+      "sources": {
+        "civil-registry": {
+          "adapter": "mock_civil",
+          "agreement": "DSA-CIV-2026-01 (placeholder)",
+          "checks": {
+            "identity_status": {
+              "cache_ttl_hours": 168,
+              "identifier": "national_id",
+              "purposes": [
+                "eligibility_verification",
+                "identity_proofing"
+              ],
+              "question": "Is the identity verified and the person alive?",
+              "response_schema": {
+                "reference": "string",
+                "verified": "boolean"
+              }
+            },
+            "residence": {
+              "cache_ttl_hours": 168,
+              "identifier": "national_id",
+              "purposes": [
+                "eligibility_verification"
+              ],
+              "question": "Is the person resident in the requested district?",
+              "response_schema": {
+                "match": "boolean"
+              }
+            }
+          },
+          "description": "Civil registry identity verification."
+        },
+        "disability-registry": {
+          "adapter": "mock_disability",
+          "agreement": "DSA-DIS-2026-01 (placeholder)",
+          "checks": {
+            "disability_eligibility": {
+              "cache_ttl_hours": 24,
+              "identifier": "national_id",
+              "purposes": [
+                "eligibility_verification"
+              ],
+              "question": "Does the person hold a certification that qualifies for the program?",
+              "response_schema": {
+                "eligible": "boolean"
+              }
+            }
+          },
+          "description": "National disability certification registry."
+        },
+        "tax-authority": {
+          "adapter": "mock_tax",
+          "agreement": "DSA-TAX-2026-01 (placeholder)",
+          "checks": {
+            "income_band": {
+              "cache_ttl_hours": 24,
+              "identifier": "national_id",
+              "purposes": [
+                "eligibility_verification"
+              ],
+              "question": "Which income band is the person in?",
+              "response_schema": {
+                "band": "string"
+              }
+            },
+            "income_threshold": {
+              "cache_ttl_hours": 24,
+              "identifier": "national_id",
+              "purposes": [
+                "eligibility_verification"
+              ],
+              "question": "Is declared annual income below the program threshold?",
+              "response_schema": {
+                "met": "boolean"
+              }
+            }
+          },
+          "description": "National tax authority income verification service."
+        }
+      }
+    },
+    "version": "2026.10.0"
+  },
+  "conformance": {
+    "vectors": [
+      {
+        "description": "The guide's Appendix A example: income becomes a threshold assertion, bank account is denied.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log",
+            "no_export",
+            "expire_response:24h"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "bank_account": "deny",
+            "disability": "deny",
+            "household_size": "exact",
+            "income": "assertion:below_threshold"
+          }
+        },
+        "guide_ref": "Appendix A; 14.1 Minimization",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "income",
+            "household_size",
+            "disability",
+            "bank_account"
+          ],
+          "context": {
+            "device_trust": "managed"
+          },
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "appendix_a_case_worker_eligibility"
+      },
+      {
+        "description": "Same request using the catalogue's attribute names: disability_status is asserted, address reduced to district.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log",
+            "no_export",
+            "expire_response:24h"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "address": "precision:district",
+            "bank_account": "deny",
+            "disability_status": "assertion:eligible",
+            "income": "assertion:below_threshold"
+          }
+        },
+        "guide_ref": "Section 7 policy decision example",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "income",
+            "disability_status",
+            "bank_account",
+            "address"
+          ],
+          "context": {
+            "device_trust": "managed"
+          },
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "appendix_a_with_catalogue_attribute_names"
+      },
+      {
+        "description": "The same actor asking for the same field under a purpose their role may not use is denied.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "ROLE_NOT_PERMITTED"
+          ],
+          "release": {
+            "income": "deny"
+          }
+        },
+        "guide_ref": "14.1 Purpose enforcement",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "income"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "analytics_reporting",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "purpose_enforcement_same_actor_disallowed_purpose"
+      },
+      {
+        "description": "Grievance handling may not see income even though the role is permitted for the purpose.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log",
+            "no_export"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "income": "deny",
+            "payment_status": "exact"
+          }
+        },
+        "guide_ref": "14.1 Purpose enforcement",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "income",
+            "payment_status"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "grievance_handling",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "purpose_enforcement_allowed_purpose_denies_field"
+      },
+      {
+        "description": "A Program A user cannot read Program B data without an assignment.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "NO_PROGRAM_ASSIGNMENT"
+          ],
+          "release": {
+            "income": "deny"
+          }
+        },
+        "guide_ref": "14.1 Cross-program isolation",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "income"
+          ],
+          "context": {},
+          "program": "disability_allowance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-1",
+            "program_relationship": [
+              "disability_allowance"
+            ]
+          }
+        },
+        "name": "cross_program_isolation"
+      },
+      {
+        "description": "An assigned case worker still cannot browse a person who has no relationship with the program.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "NO_SUBJECT_RELATIONSHIP"
+          ],
+          "release": {
+            "income": "deny"
+          }
+        },
+        "guide_ref": "4.1 task-based access rather than broad record browsing",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "income"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-2",
+            "program_relationship": [
+              "school_feeding"
+            ]
+          }
+        },
+        "name": "subject_not_related_to_program"
+      },
+      {
+        "description": "On a low-trust device C4 attributes are withheld while C3 attributes are still released.",
+        "expected": {
+          "allow": true,
+          "obligations_exclude": [],
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "address": "precision:district",
+            "household_size": "exact",
+            "income": "deny"
+          }
+        },
+        "guide_ref": "4.2 Session risk",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "income",
+            "household_size",
+            "address"
+          ],
+          "context": {
+            "device_trust": "low"
+          },
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "low_trust_device_downgrades_c4"
+      },
+      {
+        "description": "If every requested attribute is C4 and the device is low-trust, the read is denied outright.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "NOTHING_RELEASABLE"
+          ],
+          "release": {
+            "disability_status": "deny",
+            "income": "deny"
+          }
+        },
+        "guide_ref": "4.2 Session risk; 7 fail-closed",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "income",
+            "disability_status"
+          ],
+          "context": {
+            "device_trust": "low"
+          },
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "low_trust_device_nothing_releasable"
+      },
+      {
+        "description": "Analytics export receives bands and regions, never identifiers, with aggregation obligations.",
+        "expected": {
+          "allow": true,
+          "obligations_exclude": [
+            "no_export"
+          ],
+          "obligations_include": [
+            "log",
+            "aggregate_only",
+            "k_anonymity:5"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "address": "precision:region",
+            "household_size": "exact",
+            "income": "band",
+            "name": "deny"
+          }
+        },
+        "guide_ref": "5.2 Analytics Store; 14.1 Export controls",
+        "input": {
+          "action": "export",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "an-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "ANALYST"
+          },
+          "attributes": [
+            "income",
+            "address",
+            "name",
+            "household_size"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "analytics_reporting",
+          "subject": {
+            "person_token": null,
+            "program_relationship": []
+          }
+        },
+        "name": "analyst_export_is_deidentified"
+      },
+      {
+        "description": "Bulk export is not an action of operational purposes.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "ACTION_NOT_PERMITTED"
+          ],
+          "release": {
+            "household_size": "deny"
+          }
+        },
+        "guide_ref": "14.1 Export controls",
+        "input": {
+          "action": "export",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "household_size"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "export_denied_for_operational_purpose"
+      },
+      {
+        "description": "Default deny for purposes that are not registered.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "UNKNOWN_PURPOSE"
+          ],
+          "release": {
+            "contact": "deny"
+          }
+        },
+        "guide_ref": "2 Purpose limitation",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "contact"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "marketing",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "unknown_purpose_is_denied"
+      },
+      {
+        "description": "The payment service sees a payment token and the beneficiary name, never the national id.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log",
+            "no_export"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "bank_account": "token",
+            "name": "exact",
+            "national_id": "deny"
+          }
+        },
+        "guide_ref": "6.3 Payment workflow; 8.2 Payment execution",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "mtls"
+            ],
+            "id": "svc:payments",
+            "is_service": true,
+            "programs": [
+              "*"
+            ],
+            "role": "PAYMENT_SERVICE"
+          },
+          "attributes": [
+            "bank_account",
+            "name",
+            "national_id"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "payment_execution",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "payment_service_receives_token_not_account"
+      },
+      {
+        "description": "A human finance officer under the same purpose gets a stricter role override: no account, masked name.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log",
+            "no_export"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "bank_account": "deny",
+            "entitlement": "exact",
+            "name": "masked"
+          }
+        },
+        "guide_ref": "6.3 case workers see status, not credentials",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "fin-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "FINANCE_OFFICER"
+          },
+          "attributes": [
+            "bank_account",
+            "name",
+            "entitlement"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "payment_execution",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "finance_officer_role_override"
+      },
+      {
+        "description": "Case data is task-based: without an assigned case id the read is denied.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "NO_CASE_ASSIGNMENT"
+          ],
+          "release": {
+            "case_narrative": "deny"
+          }
+        },
+        "guide_ref": "6.4 relationship-based access",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "cases": [
+              "CASE-1"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "case_narrative"
+          ],
+          "context": {
+            "case_id": "CASE-2"
+          },
+          "program": "cash_assistance",
+          "purpose": "case_management",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "case_management_requires_case_assignment"
+      },
+      {
+        "description": "With the case assigned the worker sees the narrative, a masked national id and banded income.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log",
+            "no_export"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "bank_account": "deny",
+            "case_narrative": "exact",
+            "income": "band",
+            "national_id": "masked"
+          }
+        },
+        "guide_ref": "6.4 Case management",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "cases": [
+              "CASE-1"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "case_narrative",
+            "national_id",
+            "income",
+            "bank_account"
+          ],
+          "context": {
+            "case_id": "CASE-1"
+          },
+          "program": "cash_assistance",
+          "purpose": "case_management",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "case_management_with_assignment"
+      },
+      {
+        "description": "Emergency access without a grant is denied even with MFA.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "BREAK_GLASS_REQUIRED"
+          ],
+          "release": {
+            "contact": "deny"
+          }
+        },
+        "guide_ref": "12.1 Break-glass access",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd",
+              "mfa"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "contact"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "emergency_protection",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": []
+          }
+        },
+        "name": "break_glass_requires_grant"
+      },
+      {
+        "description": "Exceptional access needs stronger authentication before a grant is even considered.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "MFA_REQUIRED"
+          ],
+          "release": {
+            "contact": "deny"
+          }
+        },
+        "guide_ref": "12.1 Break-glass access",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "contact"
+          ],
+          "context": {
+            "break_glass": {
+              "active": true,
+              "actor_id": "cw-1",
+              "attributes": [
+                "contact"
+              ],
+              "matches_subject": true
+            }
+          },
+          "program": "cash_assistance",
+          "purpose": "emergency_protection",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": []
+          }
+        },
+        "name": "break_glass_requires_mfa"
+      },
+      {
+        "description": "An active grant releases exactly its scoped attributes and nothing else, with alert and review obligations.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log",
+            "alert",
+            "review_required",
+            "no_export"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "contact": "exact",
+            "national_id": "deny"
+          }
+        },
+        "guide_ref": "12.1; 14.1 Break-glass",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd",
+              "mfa"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "contact",
+            "national_id"
+          ],
+          "context": {
+            "break_glass": {
+              "active": true,
+              "actor_id": "cw-1",
+              "attributes": [
+                "contact",
+                "name"
+              ],
+              "grant_id": "BG-1",
+              "matches_subject": true
+            }
+          },
+          "program": "cash_assistance",
+          "purpose": "emergency_protection",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": []
+          }
+        },
+        "name": "break_glass_active_grant_scoped"
+      },
+      {
+        "description": "An expired or revoked grant no longer unlocks anything.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "BREAK_GLASS_INACTIVE"
+          ],
+          "release": {
+            "contact": "deny"
+          }
+        },
+        "guide_ref": "14.1 Break-glass: temporary access expires",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd",
+              "mfa"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "contact"
+          ],
+          "context": {
+            "break_glass": {
+              "active": false,
+              "actor_id": "cw-1",
+              "attributes": [
+                "contact"
+              ],
+              "grant_id": "BG-1",
+              "matches_subject": true
+            }
+          },
+          "program": "cash_assistance",
+          "purpose": "emergency_protection",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": []
+          }
+        },
+        "name": "break_glass_expired_grant"
+      },
+      {
+        "description": "A grant cannot be used by someone other than its requester.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "BREAK_GLASS_NOT_HOLDER"
+          ],
+          "release": {
+            "contact": "deny"
+          }
+        },
+        "guide_ref": "12.1 Break-glass access",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd",
+              "mfa"
+            ],
+            "id": "cw-9",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "contact"
+          ],
+          "context": {
+            "break_glass": {
+              "active": true,
+              "actor_id": "cw-1",
+              "attributes": [
+                "contact"
+              ],
+              "grant_id": "BG-1",
+              "matches_subject": true
+            }
+          },
+          "program": "cash_assistance",
+          "purpose": "emergency_protection",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": []
+          }
+        },
+        "name": "break_glass_not_holder"
+      },
+      {
+        "description": "A grant for one person does not open another person's record.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "BREAK_GLASS_SUBJECT_MISMATCH"
+          ],
+          "release": {
+            "contact": "deny"
+          }
+        },
+        "guide_ref": "12.1 Break-glass access",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd",
+              "mfa"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "contact"
+          ],
+          "context": {
+            "break_glass": {
+              "active": true,
+              "actor_id": "cw-1",
+              "attributes": [
+                "contact"
+              ],
+              "grant_id": "BG-1",
+              "matches_subject": false
+            }
+          },
+          "program": "cash_assistance",
+          "purpose": "emergency_protection",
+          "subject": {
+            "person_token": "P-OTHER",
+            "program_relationship": []
+          }
+        },
+        "name": "break_glass_subject_mismatch"
+      },
+      {
+        "description": "Unknown attributes are denied without failing the whole request.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "household_size": "exact",
+            "shoe_size": "deny"
+          }
+        },
+        "guide_ref": "8.1 schema validation",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "household_size",
+            "shoe_size"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "unknown_attribute_is_denied_individually"
+      },
+      {
+        "description": "A human claiming the '*' program assignment gains nothing.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "NO_PROGRAM_ASSIGNMENT"
+          ],
+          "release": {
+            "household_size": "deny"
+          }
+        },
+        "guide_ref": "4.2 Service identities",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "programs": [
+              "*"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "household_size"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "wildcard_program_only_for_service_identities"
+      },
+      {
+        "description": "Claiming a service role on a non-service token does not unlock the wildcard assignment.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "NO_PROGRAM_ASSIGNMENT"
+          ],
+          "release": {
+            "bank_account": "deny"
+          }
+        },
+        "guide_ref": "4.2 Service identities",
+        "input": {
+          "action": "read",
+          "actor": {
+            "agency": "SOCIAL_PROTECTION_AGENCY",
+            "amr": [
+              "pwd"
+            ],
+            "id": "cw-1",
+            "is_service": false,
+            "programs": [
+              "*"
+            ],
+            "role": "PAYMENT_SERVICE"
+          },
+          "attributes": [
+            "bank_account"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "payment_execution",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "service_role_claim_without_service_flag"
+      },
+      {
+        "description": "No actor identity means no decision other than deny.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "AUTH_REQUIRED"
+          ],
+          "release": {
+            "household_size": "deny"
+          }
+        },
+        "guide_ref": "7.1 Decision sequence step 1",
+        "input": {
+          "action": "read",
+          "actor": {
+            "id": "",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "CASE_WORKER"
+          },
+          "attributes": [
+            "household_size"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "unauthenticated_request"
+      },
+      {
+        "description": "Roles outside the catalogue are denied before anything else is evaluated.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "UNKNOWN_ROLE"
+          ],
+          "release": {
+            "household_size": "deny"
+          }
+        },
+        "guide_ref": "12 Authorization default deny",
+        "input": {
+          "action": "read",
+          "actor": {
+            "id": "x-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "SUPERUSER"
+          },
+          "attributes": [
+            "household_size"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "eligibility_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "unknown_role"
+      },
+      {
+        "description": "School feeding has no payment execution purpose, so the payment service is refused for it.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "PURPOSE_NOT_ALLOWED_FOR_PROGRAM"
+          ],
+          "release": {
+            "bank_account": "deny"
+          }
+        },
+        "guide_ref": "2 Purpose limitation",
+        "input": {
+          "action": "read",
+          "actor": {
+            "amr": [
+              "mtls"
+            ],
+            "id": "svc:payments",
+            "is_service": true,
+            "programs": [
+              "*"
+            ],
+            "role": "PAYMENT_SERVICE"
+          },
+          "attributes": [
+            "bank_account"
+          ],
+          "context": {},
+          "program": "school_feeding",
+          "purpose": "payment_execution",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "school_feeding"
+            ]
+          }
+        },
+        "name": "purpose_not_registered_for_program"
+      },
+      {
+        "description": "The retention service may execute deletions with no attribute release at all.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {}
+        },
+        "guide_ref": "14.1 Retention",
+        "input": {
+          "action": "delete",
+          "actor": {
+            "amr": [
+              "mtls"
+            ],
+            "id": "svc:retention",
+            "is_service": true,
+            "programs": [
+              "*"
+            ],
+            "role": "RETENTION_SERVICE"
+          },
+          "attributes": [],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "retention_processing",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": []
+          }
+        },
+        "name": "retention_service_delete"
+      },
+      {
+        "description": "A registration officer can write identifiers, but reading them back follows the release map (national id verify-only, bank account denied).",
+        "expected": {
+          "allow": true,
+          "obligations_exclude": [
+            "no_export"
+          ],
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "bank_account": "deny",
+            "name": "exact",
+            "national_id": "verify_only"
+          }
+        },
+        "guide_ref": "6.1 Registration",
+        "input": {
+          "action": "read",
+          "actor": {
+            "amr": [
+              "pwd"
+            ],
+            "id": "ro-1",
+            "programs": [
+              "cash_assistance"
+            ],
+            "role": "REGISTRATION_OFFICER"
+          },
+          "attributes": [
+            "name",
+            "national_id",
+            "bank_account"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "registration",
+          "subject": {
+            "person_token": null,
+            "program_relationship": []
+          }
+        },
+        "name": "registration_write_then_read_back_is_minimised"
+      },
+      {
+        "description": "An ordinary program service cannot resolve a token to a national id.",
+        "expected": {
+          "allow": false,
+          "obligations_include": [
+            "log"
+          ],
+          "reason_codes": [
+            "ROLE_NOT_PERMITTED"
+          ],
+          "release": {
+            "national_id": "deny"
+          }
+        },
+        "guide_ref": "14.1 Token unlinkability",
+        "input": {
+          "action": "read",
+          "actor": {
+            "amr": [
+              "mtls"
+            ],
+            "id": "svc:program",
+            "is_service": true,
+            "programs": [
+              "*"
+            ],
+            "role": "PROGRAM_SERVICE"
+          },
+          "attributes": [
+            "national_id"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "token_resolution",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "token_unlinkability_for_program_services"
+      },
+      {
+        "description": "The broker may resolve the national id for an external query, with a no-persist obligation.",
+        "expected": {
+          "allow": true,
+          "obligations_include": [
+            "log",
+            "no_persist",
+            "no_export"
+          ],
+          "reason_codes": [
+            "ALLOW"
+          ],
+          "release": {
+            "national_id": "exact"
+          }
+        },
+        "guide_ref": "6.2 query, do not copy",
+        "input": {
+          "action": "read",
+          "actor": {
+            "amr": [
+              "mtls"
+            ],
+            "id": "svc:broker",
+            "is_service": true,
+            "programs": [
+              "*"
+            ],
+            "role": "BROKER_SERVICE"
+          },
+          "attributes": [
+            "national_id"
+          ],
+          "context": {},
+          "program": "cash_assistance",
+          "purpose": "external_verification",
+          "subject": {
+            "person_token": "P-8294AX",
+            "program_relationship": [
+              "cash_assistance"
+            ]
+          }
+        },
+        "name": "broker_just_in_time_resolution"
+      }
+    ]
+  }
+}

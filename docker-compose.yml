@@ -1,0 +1,189 @@
+# Evaluation deployment: PostgreSQL + Open Policy Agent + the SP-MIS services.
+#
+#   docker compose up --build
+#   open http://localhost:8000/          (service index; each service has /<service>/docs)
+#
+# Profiles
+#   default      all services in one container, PDP delegating to OPA, one database per service
+#   distributed  each service in its own container (same image, `serve <service>`), fronted by a
+#                minimal gateway container. `docker compose --profile distributed up`
+#
+# Replace the dev secrets below before any use outside a laptop.
+
+x-common-env: &common-env
+  PBD_CATALOG_DIR: /app/catalog
+  PBD_POLICY_ENGINE: opa
+  PBD_OPA_URL: http://opa:8181
+  PBD_DATABASE_URL: postgresql+psycopg://spmis:spmis-dev-password@postgres:5432/{service}
+  PBD_AUTH_SIGNING_KEY: ${PBD_AUTH_SIGNING_KEY:-dev-only-change-me}
+  PBD_VAULT_MASTER_KEY: ${PBD_VAULT_MASTER_KEY:-}
+  PBD_INDEX_HMAC_KEY: ${PBD_INDEX_HMAC_KEY:-dev-only-index-key}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: spmis
+      POSTGRES_PASSWORD: spmis-dev-password
+      POSTGRES_DB: spmis
+    volumes:
+      - ./deploy/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spmis"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  opa:
+    image: openpolicyagent/opa:1.9.0
+    command: ["run", "--server", "--addr", ":8181", "--log-level", "info", "/policy/rego", "/policy/bundle"]
+    volumes:
+      - ./policy:/policy:ro
+    healthcheck:
+      test: ["CMD", "/opa", "eval", "-d", "/policy/rego", "-d", "/policy/bundle", "true"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  spmis:
+    build: .
+    environment:
+      <<: *common-env
+      PBD_SERVICE_MODE: allinone
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      opa:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------- distributed profile
+  pdp:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "pdp"]
+    environment: { <<: *common-env, PBD_SERVICE_MODE: distributed, PBD_AUDIT_URL: http://audit:8000 }
+    depends_on: { opa: { condition: service_healthy } }
+
+  audit:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "audit"]
+    environment: { <<: *common-env, PBD_SERVICE_MODE: distributed }
+    depends_on: { postgres: { condition: service_healthy } }
+
+  vault:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "vault"]
+    environment:
+      <<: *common-env
+      PBD_SERVICE_MODE: distributed
+      PBD_PDP_URL: http://pdp:8000
+      PBD_AUDIT_URL: http://audit:8000
+      PBD_REGISTRY_URL: http://registry:8000
+      PBD_RETENTION_URL: http://retention:8000
+      PBD_BREAKGLASS_URL: http://breakglass:8000
+    depends_on: { postgres: { condition: service_healthy } }
+
+  registry:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "registry"]
+    environment:
+      <<: *common-env
+      PBD_SERVICE_MODE: distributed
+      PBD_PDP_URL: http://pdp:8000
+      PBD_AUDIT_URL: http://audit:8000
+      PBD_RETENTION_URL: http://retention:8000
+      PBD_BREAKGLASS_URL: http://breakglass:8000
+    depends_on: { postgres: { condition: service_healthy } }
+
+  program:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "program"]
+    environment:
+      <<: *common-env
+      PBD_SERVICE_MODE: distributed
+      PBD_PDP_URL: http://pdp:8000
+      PBD_AUDIT_URL: http://audit:8000
+      PBD_REGISTRY_URL: http://registry:8000
+      PBD_ELIGIBILITY_URL: http://eligibility:8000
+      PBD_VAULT_URL: http://vault:8000
+      PBD_RETENTION_URL: http://retention:8000
+      PBD_BREAKGLASS_URL: http://breakglass:8000
+    depends_on: { postgres: { condition: service_healthy } }
+
+  broker:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "broker"]
+    environment:
+      <<: *common-env
+      PBD_SERVICE_MODE: distributed
+      PBD_PDP_URL: http://pdp:8000
+      PBD_AUDIT_URL: http://audit:8000
+      PBD_REGISTRY_URL: http://registry:8000
+      PBD_VAULT_URL: http://vault:8000
+      PBD_BREAKGLASS_URL: http://breakglass:8000
+    depends_on: { postgres: { condition: service_healthy } }
+
+  eligibility:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "eligibility"]
+    environment:
+      <<: *common-env
+      PBD_SERVICE_MODE: distributed
+      PBD_PDP_URL: http://pdp:8000
+      PBD_AUDIT_URL: http://audit:8000
+      PBD_REGISTRY_URL: http://registry:8000
+      PBD_BROKER_URL: http://broker:8000
+      PBD_RETENTION_URL: http://retention:8000
+      PBD_BREAKGLASS_URL: http://breakglass:8000
+    depends_on: { postgres: { condition: service_healthy } }
+
+  breakglass:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "breakglass"]
+    environment: { <<: *common-env, PBD_SERVICE_MODE: distributed, PBD_AUDIT_URL: http://audit:8000 }
+    depends_on: { postgres: { condition: service_healthy } }
+
+  payments:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "payments"]
+    environment:
+      <<: *common-env
+      PBD_SERVICE_MODE: distributed
+      PBD_PDP_URL: http://pdp:8000
+      PBD_AUDIT_URL: http://audit:8000
+      PBD_REGISTRY_URL: http://registry:8000
+      PBD_VAULT_URL: http://vault:8000
+      PBD_PROGRAM_URL: http://program:8000
+      PBD_RETENTION_URL: http://retention:8000
+      PBD_BREAKGLASS_URL: http://breakglass:8000
+    depends_on: { postgres: { condition: service_healthy } }
+
+  retention:
+    build: .
+    profiles: ["distributed"]
+    command: ["serve", "retention"]
+    environment:
+      <<: *common-env
+      PBD_SERVICE_MODE: distributed
+      PBD_AUDIT_URL: http://audit:8000
+      PBD_VAULT_URL: http://vault:8000
+      PBD_REGISTRY_URL: http://registry:8000
+      PBD_PROGRAM_URL: http://program:8000
+      PBD_BROKER_URL: http://broker:8000
+      PBD_ELIGIBILITY_URL: http://eligibility:8000
+      PBD_PAYMENTS_URL: http://payments:8000
+    depends_on: { postgres: { condition: service_healthy } }
+
+volumes:
+  pgdata:

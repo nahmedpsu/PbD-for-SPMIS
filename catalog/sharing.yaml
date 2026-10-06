@@ -1,0 +1,70 @@
+# Data-sharing matrix: which authoritative source may be asked which question, under which
+# purposes, what shape the answer may take, and for how long an answer may be cached.
+#
+# The broker enforces this matrix. An adapter can only return the keys listed in
+# `response_schema`; anything else is dropped before the answer leaves the adapter.
+version: "2026.10.0"
+
+sources:
+  tax-authority:
+    adapter: mock_tax
+    description: National tax authority income verification service.
+    agreement: DSA-TAX-2026-01 (placeholder)
+    checks:
+      income_threshold:
+        question: Is declared annual income below the program threshold?
+        purposes: [eligibility_verification]
+        identifier: national_id
+        response_schema:
+          met: boolean
+        cache_ttl_hours: 24
+      income_band:
+        question: Which income band is the person in?
+        purposes: [eligibility_verification]
+        identifier: national_id
+        response_schema:
+          band: string
+        cache_ttl_hours: 24
+
+  disability-registry:
+    adapter: mock_disability
+    description: National disability certification registry.
+    agreement: DSA-DIS-2026-01 (placeholder)
+    checks:
+      disability_eligibility:
+        question: Does the person hold a certification that qualifies for the program?
+        purposes: [eligibility_verification]
+        identifier: national_id
+        response_schema:
+          eligible: boolean
+        cache_ttl_hours: 24
+
+  civil-registry:
+    adapter: mock_civil
+    description: Civil registry identity verification.
+    agreement: DSA-CIV-2026-01 (placeholder)
+    checks:
+      identity_status:
+        question: Is the identity verified and the person alive?
+        purposes: [eligibility_verification, identity_proofing]
+        identifier: national_id
+        response_schema:
+          verified: boolean
+          reference: string
+        cache_ttl_hours: 168
+      residence:
+        question: Is the person resident in the requested district?
+        purposes: [eligibility_verification]
+        identifier: national_id
+        response_schema:
+          match: boolean
+        cache_ttl_hours: 168
+
+checks:
+  # Maps a check to the catalogue attribute whose release mode governs it. The policy engine
+  # must return a non-deny mode for the attribute before the broker may ask the question.
+  income_threshold: income
+  income_band: income
+  disability_eligibility: disability_status
+  identity_status: national_id
+  residence: address

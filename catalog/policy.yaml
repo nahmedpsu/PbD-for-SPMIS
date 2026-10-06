@@ -1,0 +1,41 @@
+# Context rules that apply across all purposes.
+version: "2026.10.0"
+
+policy:
+  default_decision: deny
+
+  # Device trust levels as asserted by the access layer (X-Device-Trust).
+  device_trust_levels: [low, managed, high]
+
+  # Attributes of these classes are never released to low-trust devices, whatever the purpose.
+  low_trust_denies_classes: [C4]
+
+  # Releasing any attribute of these classes exactly (not banded/asserted/tokenised) adds the
+  # no_export obligation.
+  no_export_classes: [C4]
+
+  # Roles treated as machine identities for relationship checks (they act for a program, not
+  # for an individual case). The wildcard program assignment "*" is only honoured for these.
+  service_roles:
+    - REGISTRY_SERVICE
+    - VAULT_SERVICE
+    - ELIGIBILITY_SERVICE
+    - BROKER_SERVICE
+    - PROGRAM_SERVICE
+    - PAYMENT_SERVICE
+    - RETENTION_SERVICE
+    - AUDIT_SERVICE
+    - BREAKGLASS_SERVICE
+    - PDP_SERVICE
+
+  # Human roles recognised by the system. Unknown roles are denied.
+  human_roles:
+    - CITIZEN
+    - REGISTRATION_OFFICER
+    - CASE_WORKER
+    - SUPERVISOR
+    - GRIEVANCE_OFFICER
+    - FINANCE_OFFICER
+    - ANALYST
+    - PRIVACY_ADMIN
+    - AUDITOR

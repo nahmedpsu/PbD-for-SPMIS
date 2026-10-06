@@ -1,0 +1,216 @@
+# Purpose and lawful-basis registry.
+#
+# A purpose is the unit of authorisation. Every sensitive request names one, and the policy
+# engine releases only the attributes a purpose registers, in the mode it registers them.
+# Changing what a role may see for a purpose is a change to this file, not to application code.
+#
+# Lawful bases are jurisdiction-specific. Consent is one option, not the default.
+version: "2026.10.0"
+
+lawful_bases:
+  statutory_authority: Processing required by the social protection statute.
+  public_service_mandate: Processing necessary to deliver a mandated public service.
+  legal_obligation: Processing required by another law (e.g. public finance rules).
+  consent: Processing based on recorded, revocable consent of the data subject.
+  vital_interest: Processing to protect life or physical safety.
+
+purposes:
+  registration:
+    description: Capture and maintain registration data for a household or person.
+    lawful_basis: public_service_mandate
+    allowed_roles: [REGISTRATION_OFFICER, REGISTRY_SERVICE]
+    actions: [read, write]
+    requires_relationship: false
+    release:
+      name: exact
+      contact: exact
+      national_id: verify_only
+      household_size: exact
+      address: exact
+      income: exact
+      employment_status: exact
+      disability_status: exact
+      vulnerability_attributes: exact
+    obligations: [log]
+
+  identity_proofing:
+    description: Verify identity and create or look up the internal person token.
+    lawful_basis: statutory_authority
+    allowed_roles: [REGISTRATION_OFFICER, VAULT_SERVICE, REGISTRY_SERVICE]
+    actions: [read, write]
+    requires_relationship: false
+    release:
+      national_id: verify_only
+      name: masked
+    obligations: [log]
+
+  eligibility_verification:
+    description: Determine whether a person meets program eligibility rules.
+    lawful_basis: statutory_authority
+    allowed_roles: [CASE_WORKER, ELIGIBILITY_SERVICE, BROKER_SERVICE]
+    actions: [read]
+    requires_relationship: true
+    release:
+      income: "assertion:below_threshold"
+      household_size: exact
+      disability_status: "assertion:eligible"
+      address: "precision:district"
+      employment_status: exact
+      eligibility_outcome: exact
+      national_id: verify_only
+      bank_account: deny
+      name: deny
+      contact: deny
+    obligations: [log, no_export, "expire_response:24h"]
+
+  external_verification:
+    description: >
+      Just-in-time resolution of an identifier so that an authoritative external source can be
+      queried for an assertion. The resolved value must never be persisted by the caller.
+    lawful_basis: statutory_authority
+    allowed_roles: [BROKER_SERVICE]
+    actions: [read]
+    requires_relationship: true
+    release:
+      national_id: exact
+    obligations: [log, no_persist, no_export]
+
+  enrollment:
+    description: Enrol an eligible person in a program and manage entitlement.
+    lawful_basis: statutory_authority
+    allowed_roles: [CASE_WORKER, PROGRAM_SERVICE, ELIGIBILITY_SERVICE]
+    actions: [read, write]
+    requires_relationship: true
+    release:
+      enrollment_status: exact
+      entitlement: exact
+      eligibility_outcome: exact
+      household_size: exact
+    obligations: [log]
+
+  case_management:
+    description: Manage an assigned case, including sensitive narratives.
+    lawful_basis: public_service_mandate
+    allowed_roles: [CASE_WORKER, SUPERVISOR]
+    actions: [read, write]
+    requires_relationship: true
+    requires_case_assignment: true
+    release:
+      name: exact
+      contact: exact
+      address: exact
+      household_size: exact
+      income: band
+      disability_status: exact
+      vulnerability_attributes: exact
+      case_narrative: exact
+      enrollment_status: exact
+      payment_status: exact
+      national_id: masked
+      bank_account: deny
+    obligations: [log, no_export]
+
+  grievance_handling:
+    description: Resolve a complaint or appeal lodged by a beneficiary.
+    lawful_basis: public_service_mandate
+    allowed_roles: [GRIEVANCE_OFFICER, CASE_WORKER]
+    actions: [read, write]
+    requires_relationship: true
+    release:
+      name: exact
+      contact: exact
+      enrollment_status: exact
+      payment_status: exact
+      eligibility_outcome: exact
+      address: "precision:district"
+      income: deny
+      bank_account: deny
+      national_id: deny
+    obligations: [log, no_export]
+
+  payment_execution:
+    description: Produce and execute a disbursement instruction through a payment provider.
+    lawful_basis: legal_obligation
+    allowed_roles: [PAYMENT_SERVICE, FINANCE_OFFICER]
+    actions: [read, write]
+    requires_relationship: true
+    release:
+      bank_account: token
+      name: exact
+      entitlement: exact
+      enrollment_status: exact
+      payment_status: exact
+      national_id: deny
+      income: deny
+    role_overrides:
+      FINANCE_OFFICER:
+        bank_account: deny
+        name: masked
+    obligations: [log, no_export]
+
+  payment_status_inquiry:
+    description: Check the status of a payment without seeing payment credentials.
+    lawful_basis: public_service_mandate
+    allowed_roles: [CASE_WORKER, GRIEVANCE_OFFICER, PROGRAM_SERVICE]
+    actions: [read]
+    requires_relationship: true
+    release:
+      payment_status: exact
+      entitlement: exact
+      bank_account: deny
+    obligations: [log]
+
+  analytics_reporting:
+    description: Produce de-identified operational statistics.
+    lawful_basis: statutory_authority
+    allowed_roles: [ANALYST]
+    actions: [read, export]
+    requires_relationship: false
+    release:
+      income: band
+      household_size: exact
+      address: "precision:region"
+      disability_status: "assertion:eligible"
+      employment_status: exact
+      enrollment_status: exact
+      name: deny
+      contact: deny
+      national_id: deny
+      bank_account: deny
+      case_narrative: deny
+      vulnerability_attributes: deny
+    obligations: [log, aggregate_only, "k_anonymity:5"]
+
+  token_resolution:
+    description: Resolve an opaque token to direct identifiers for a service that must present them externally.
+    lawful_basis: statutory_authority
+    allowed_roles: [BROKER_SERVICE, PAYMENT_SERVICE]
+    actions: [read]
+    requires_relationship: true
+    release:
+      national_id: exact
+      name: exact
+      contact: exact
+    obligations: [log, no_persist, alert]
+
+  retention_processing:
+    description: Execute retention expiry actions (archive, anonymise, delete).
+    lawful_basis: legal_obligation
+    allowed_roles: [RETENTION_SERVICE]
+    actions: [read, write, delete]
+    requires_relationship: false
+    release: {}
+    obligations: [log]
+
+  emergency_protection:
+    description: >
+      Exceptional access to protect a person at immediate risk. Requires an approved, active,
+      time-bounded break-glass grant naming the subject and the attributes.
+    lawful_basis: vital_interest
+    allowed_roles: [CASE_WORKER, SUPERVISOR]
+    actions: [read]
+    requires_relationship: false
+    requires_break_glass: true
+    requires_mfa: true
+    release: {}
+    obligations: [log, alert, review_required, no_export]

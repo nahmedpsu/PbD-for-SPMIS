@@ -1,0 +1,127 @@
+# Attribute catalogue: every personal data attribute the SP-MIS processes, its classification,
+# which store holds it, and which release modes are meaningful for it.
+#
+# Classes follow the guide's scheme:
+#   C1 public/non-personal   C2 internal   C3 personal   C4 sensitive / high impact
+#
+# Release modes:
+#   exact                 raw value
+#   band                  value mapped to a configured band (see `bands`)
+#   assertion:<name>      boolean derived from the value and program rules
+#   precision:<level>     structured value reduced to one component (e.g. address -> district)
+#   token                 opaque reference instead of the value (payment instruments)
+#   verify_only           only whether a value exists / has been verified
+#   masked                last characters only
+#   deny                  not released
+version: "2026.10.0"
+
+attributes:
+  national_id:
+    class: C4
+    category: identity
+    store: identity_vault
+    description: Government-issued national identifier used for identity proofing only.
+    disclosures: [exact, masked, verify_only, deny]
+
+  name:
+    class: C3
+    category: identity
+    store: identity_vault
+    description: Legal name.
+    disclosures: [exact, masked, deny]
+
+  contact:
+    class: C3
+    category: identity
+    store: identity_vault
+    description: Phone number or e-mail used for notices.
+    disclosures: [exact, masked, deny]
+
+  income:
+    class: C4
+    category: socioeconomic
+    store: social_registry
+    description: Declared or verified monthly household income.
+    disclosures: [exact, band, "assertion:below_threshold", deny]
+    bands:
+      - { label: "0-99", max: 100 }
+      - { label: "100-249", max: 250 }
+      - { label: "250-499", max: 500 }
+      - { label: "500+", max: null }
+
+  household_size:
+    class: C3
+    category: socioeconomic
+    store: social_registry
+    description: Number of household members.
+    disclosures: [exact, deny]
+
+  disability_status:
+    class: C4
+    category: health
+    store: social_registry
+    description: Certified disability status code.
+    disclosures: [exact, "assertion:eligible", deny]
+
+  vulnerability_attributes:
+    class: C4
+    category: protection
+    store: social_registry
+    description: Protection-related flags (e.g. displaced, orphan, pregnant).
+    disclosures: [exact, deny]
+
+  address:
+    class: C3
+    category: location
+    store: social_registry
+    description: Structured residential address.
+    disclosures: [exact, "precision:district", "precision:region", deny]
+
+  employment_status:
+    class: C3
+    category: socioeconomic
+    store: social_registry
+    description: Employment status code.
+    disclosures: [exact, deny]
+
+  bank_account:
+    class: C4
+    category: financial
+    store: payment_reference
+    description: Beneficiary payment instrument.
+    disclosures: [exact, token, deny]
+
+  payment_status:
+    class: C3
+    category: program
+    store: payment_reference
+    description: Disbursement status, amount and exception reason.
+    disclosures: [exact, deny]
+
+  enrollment_status:
+    class: C3
+    category: program
+    store: program_store
+    description: Program enrollment state.
+    disclosures: [exact, deny]
+
+  entitlement:
+    class: C3
+    category: program
+    store: program_store
+    description: Benefit entitlement amount and period.
+    disclosures: [exact, deny]
+
+  eligibility_outcome:
+    class: C3
+    category: program
+    store: program_store
+    description: Result of an eligibility determination and its evidence summary.
+    disclosures: [exact, deny]
+
+  case_narrative:
+    class: C4
+    category: protection
+    store: program_store
+    description: Free-text case notes; may contain highly sensitive detail.
+    disclosures: [exact, deny]

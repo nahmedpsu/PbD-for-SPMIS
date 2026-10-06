@@ -1,0 +1,73 @@
+# Retention schedule. Retention attaches to a record type (store.record) and a purpose; expiry
+# triggers the configured end action. Periods are placeholders to be replaced with the
+# jurisdiction's legal values.
+version: "2026.10.0"
+
+retention:
+  defaults:
+    C3: { period_days: 1825, end_action: anonymize }
+    C4: { period_days: 1095, end_action: delete }
+
+  records:
+    identity_vault.identity:
+      class: C4
+      period_days: 3650
+      end_action: delete
+      basis: Identity statute retention period (placeholder).
+      owner: Civil registry liaison
+
+    social_registry.person:
+      class: C3
+      period_days: 1825
+      end_action: anonymize
+      basis: Social registry regulation (placeholder).
+      owner: Registry data owner
+
+    program_store.enrollment:
+      class: C3
+      period_days: 2555
+      end_action: archive
+      basis: Program audit requirements (placeholder).
+      owner: Program manager
+
+    eligibility.determination:
+      class: C3
+      period_days: 730
+      end_action: delete
+      basis: Re-verification cycle; stale determinations must not be reused.
+      owner: Program manager
+
+    payment_reference.instruction:
+      class: C4
+      period_days: 2555
+      end_action: archive
+      basis: Public finance record-keeping obligation (placeholder).
+      owner: Finance
+
+    payment_reference.instrument:
+      class: C4
+      period_days: 365
+      end_action: delete
+      basis: Instrument retained only while an enrollment is active plus one year.
+      owner: Finance
+
+    broker.verification_cache:
+      class: C3
+      period_hours: 24
+      end_action: delete
+      basis: Cached assertions must be re-verified daily.
+      owner: Data governance
+
+    breakglass.grant:
+      class: C3
+      period_days: 3650
+      end_action: archive
+      basis: Exceptional access records are kept for independent audit.
+      owner: Audit/compliance
+
+    audit.event:
+      class: C3
+      period_days: 3650
+      end_action: archive
+      basis: Audit log retention (placeholder).
+      owner: Audit/compliance

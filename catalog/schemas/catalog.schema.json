@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/nahmedpsu/PbD-for-SPMIS/catalog/schemas/catalog.schema.json",
+  "title": "PbD-SPMIS privacy catalogue",
+  "type": "object",
+  "required": ["version", "attributes", "purposes", "programs", "policy", "retention", "sharing"],
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d{4}\\.\\d{1,2}\\.\\d+$" },
+    "attributes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["class", "category", "store", "disclosures"],
+        "properties": {
+          "class": { "enum": ["C1", "C2", "C3", "C4"] },
+          "category": { "type": "string" },
+          "store": { "type": "string" },
+          "description": { "type": "string" },
+          "disclosures": { "type": "array", "items": { "$ref": "#/$defs/releaseMode" }, "minItems": 1 },
+          "bands": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "max"],
+              "properties": { "label": { "type": "string" }, "max": { "type": ["number", "null"] } }
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "lawful_bases": { "type": "object", "additionalProperties": { "type": "string" } },
+    "purposes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["description", "lawful_basis", "allowed_roles", "actions", "release", "obligations"],
+        "properties": {
+          "description": { "type": "string" },
+          "lawful_basis": { "type": "string" },
+          "allowed_roles": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "actions": { "type": "array", "items": { "enum": ["read", "write", "delete", "export"] }, "minItems": 1 },
+          "requires_relationship": { "type": "boolean" },
+          "requires_case_assignment": { "type": "boolean" },
+          "requires_break_glass": { "type": "boolean" },
+          "requires_mfa": { "type": "boolean" },
+          "release": { "type": "object", "additionalProperties": { "$ref": "#/$defs/releaseMode" } },
+          "role_overrides": {
+            "type": "object",
+            "additionalProperties": { "type": "object", "additionalProperties": { "$ref": "#/$defs/releaseMode" } }
+          },
+          "obligations": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "programs": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["code", "name", "purposes", "eligibility"],
+        "properties": {
+          "code": { "type": "string", "pattern": "^[A-Z]{2,8}$" },
+          "name": { "type": "string" },
+          "purposes": { "type": "array", "items": { "type": "string" } },
+          "income_threshold": { "type": "number" },
+          "eligible_disability_statuses": { "type": "array", "items": { "type": "string" } },
+          "eligibility": {
+            "type": "object",
+            "properties": {
+              "all_of": { "type": "array", "items": { "type": "string" } },
+              "any_of": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "entitlement": { "type": "object" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "policy": {
+      "type": "object",
+      "required": ["default_decision", "low_trust_denies_classes", "no_export_classes", "service_roles", "human_roles"],
+      "properties": {
+        "default_decision": { "const": "deny" },
+        "device_trust_levels": { "type": "array", "items": { "type": "string" } },
+        "low_trust_denies_classes": { "type": "array", "items": { "enum": ["C1", "C2", "C3", "C4"] } },
+        "no_export_classes": { "type": "array", "items": { "enum": ["C1", "C2", "C3", "C4"] } },
+        "service_roles": { "type": "array", "items": { "type": "string" } },
+        "human_roles": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "required": ["defaults", "records"],
+      "properties": {
+        "defaults": { "type": "object", "additionalProperties": { "$ref": "#/$defs/retentionRule" } },
+        "records": {
+          "type": "object",
+          "additionalProperties": {
+            "allOf": [
+              { "$ref": "#/$defs/retentionRule" },
+              { "type": "object", "required": ["class", "basis", "owner"] }
+            ]
+          }
+        }
+      }
+    },
+    "sharing": {
+      "type": "object",
+      "required": ["sources", "checks"],
+      "properties": {
+        "sources": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["adapter", "checks"],
+            "properties": {
+              "adapter": { "type": "string" },
+              "description": { "type": "string" },
+              "agreement": { "type": "string" },
+              "checks": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "required": ["purposes", "identifier", "response_schema"],
+                  "properties": {
+                    "question": { "type": "string" },
+                    "purposes": { "type": "array", "items": { "type": "string" } },
+                    "identifier": { "type": "string" },
+                    "response_schema": { "type": "object", "additionalProperties": { "enum": ["boolean", "string", "number"] } },
+                    "cache_ttl_hours": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "checks": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "releaseMode": {
+      "type": "string",
+      "pattern": "^(exact|band|token|verify_only|masked|deny|assertion:[a-z_]+|precision:[a-z_]+)$"
+    },
+    "retentionRule": {
+      "type": "object",
+      "properties": {
+        "class": { "enum": ["C1", "C2", "C3", "C4"] },
+        "period_days": { "type": "integer", "minimum": 0 },
+        "period_hours": { "type": "integer", "minimum": 0 },
+        "end_action": { "enum": ["archive", "anonymize", "delete", "review"] },
+        "basis": { "type": "string" },
+        "owner": { "type": "string" }
+      },
+      "required": ["end_action"]
+    }
+  }
+}

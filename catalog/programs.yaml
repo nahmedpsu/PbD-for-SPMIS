@@ -1,0 +1,83 @@
+# Programs: each social protection program declares which purposes apply to it, the rules an
+# eligibility determination evaluates, and the thresholds that turn raw values into assertions.
+version: "2026.10.0"
+
+programs:
+  cash_assistance:
+    code: CASH
+    name: Unconditional Cash Assistance
+    purposes:
+      - registration
+      - identity_proofing
+      - eligibility_verification
+      - external_verification
+      - enrollment
+      - case_management
+      - grievance_handling
+      - payment_execution
+      - payment_status_inquiry
+      - analytics_reporting
+      - token_resolution
+      - retention_processing
+      - emergency_protection
+    income_threshold: 250
+    eligible_disability_statuses: [certified_moderate, certified_severe]
+    eligibility:
+      all_of: [identity_status, income_threshold]
+    entitlement:
+      base_amount: 40
+      per_member: 10
+      max_amount: 100
+      currency: XSP
+      period: monthly
+
+  disability_allowance:
+    code: DISA
+    name: Disability Allowance
+    purposes:
+      - registration
+      - identity_proofing
+      - eligibility_verification
+      - external_verification
+      - enrollment
+      - case_management
+      - grievance_handling
+      - payment_execution
+      - payment_status_inquiry
+      - analytics_reporting
+      - token_resolution
+      - retention_processing
+      - emergency_protection
+    income_threshold: 400
+    eligible_disability_statuses: [certified_moderate, certified_severe]
+    eligibility:
+      all_of: [identity_status, disability_eligibility, income_threshold]
+    entitlement:
+      base_amount: 60
+      per_member: 0
+      max_amount: 60
+      currency: XSP
+      period: monthly
+
+  school_feeding:
+    code: SCHF
+    name: School Feeding Programme
+    purposes:
+      - registration
+      - identity_proofing
+      - eligibility_verification
+      - external_verification
+      - enrollment
+      - grievance_handling
+      - analytics_reporting
+      - retention_processing
+    income_threshold: 300
+    eligible_disability_statuses: []
+    eligibility:
+      all_of: [identity_status, residence]
+    entitlement:
+      base_amount: 0
+      per_member: 0
+      max_amount: 0
+      currency: XSP
+      period: in_kind
