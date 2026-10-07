@@ -3,15 +3,15 @@
 PY ?= python
 
 install:
-	$(PY) -m pip install -e ".[dev]"
+	$(PY) -m pip install -e ".[dev,openimis,gateway]"
 
 lint:
-	ruff check src tests scripts
-	ruff format --check src tests scripts
+	ruff check src tests scripts integrations
+	ruff format --check src tests scripts integrations
 
 format:
-	ruff format src tests scripts
-	ruff check --fix src tests scripts
+	ruff format src tests scripts integrations
+	ruff check --fix src tests scripts integrations
 
 test:
 	$(PY) -m pytest

@@ -1,0 +1,27 @@
+# Privacy gateway configuration (pbd-spmis gateway --config integrations/gateway/gateway.example.yaml)
+upstream: http://openimis-backend:8000
+graphql_path: /api/graphql
+mapping: ../openimis/mapping.yaml
+
+control_plane:
+  base_url: http://privacy-control-plane:8000
+  token: ${PBD_GATEWAY_TOKEN}        # service token: pbd-spmis token --sub svc:gateway --role REGISTRY_SERVICE --programs '*' --service
+
+# How the gateway learns who is calling.
+#   header: an identity-aware proxy in front of the gateway sets X-Actor-Id, X-Actor-Role (or
+#           X-Actor-Rights as openIMIS right codes), X-Actor-Programs, X-Actor-MFA.
+#   jwt:    decode the client's bearer token (HS256 with jwt_secret, or unverified if empty when
+#           the upstream verifies it) and read the configured claims.
+actor:
+  source: header
+  jwt_secret: ""
+  jwt_claims: { id: username, role: pbd_role, rights: rights, programs: programs }
+  static_roles: {}                    # pilot shortcut: actor id -> PbD role
+
+agency: SOCIAL_PROTECTION_AGENCY
+fail_closed: true
+
+# Where entity objects sit in each operation's result (first path that matches is used).
+result_paths:
+  individual: ["edges.*.node", "*", ""]
+  beneficiary: ["edges.*.node", "*", ""]

@@ -17,6 +17,7 @@ from typing import Any
 from fastapi import Response
 
 from ..catalog.loader import Catalog, get_catalog
+from ..sdk.transforms import transform as sdk_transform
 from .audit_client import emit
 from .clients import client
 from .context import RequestContext
@@ -164,25 +165,11 @@ def apply_release(
 
 
 def transform(attr: str, value: Any, mode: str, *, program: str, catalog: Catalog) -> Any:
-    if mode == "exact":
-        return value
-    if mode == "band":
-        return catalog.band_for(attr, value)
-    if mode.startswith("assertion:"):
-        return catalog.assert_for(attr, mode.split(":", 1)[1], value, program=program)
-    if mode.startswith("precision:"):
-        level = mode.split(":", 1)[1]
-        if isinstance(value, dict):
-            return {level: value.get(level)}
-        return value
-    if mode == "token":
-        return {"token": value.get("token") if isinstance(value, dict) else value}
-    if mode == "verify_only":
-        return {"verified": bool(value)}
-    if mode == "masked":
-        s = str(value)
-        return s[-2:].rjust(len(s), "*") if len(s) > 2 else "**"
-    raise PolicyDenied(f"unknown release mode '{mode}'", code="unknown_release_mode")
+    """Apply one release mode. The implementation is shared with the SDK and the adapters."""
+    try:
+        return sdk_transform(attr, value, mode, program=program, catalog=catalog.view())
+    except ValueError as exc:
+        raise PolicyDenied(str(exc), code="unknown_release_mode") from exc
 
 
 def attach_obligations(response: Response, decision: Decision) -> None:

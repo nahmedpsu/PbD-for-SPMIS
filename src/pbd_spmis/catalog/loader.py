@@ -114,6 +114,42 @@ class Catalog:
             data_class or "C3", {"period_days": 365, "end_action": "review"}
         )
 
+    def view(self) -> dict[str, Any]:
+        """Non-sensitive catalogue view for clients: classes, bands, thresholds, release vocab."""
+        return {
+            "version": self.version,
+            "attributes": {
+                name: {
+                    "class": a["class"],
+                    "category": a.get("category"),
+                    "disclosures": list(a.get("disclosures", [])),
+                    "bands": a.get("bands", []),
+                }
+                for name, a in self.attributes.items()
+            },
+            "programs": {
+                name: {
+                    "code": p["code"],
+                    "name": p.get("name"),
+                    "income_threshold": p.get("income_threshold"),
+                    "eligible_disability_statuses": list(p.get("eligible_disability_statuses", [])),
+                    "purposes": list(p.get("purposes", [])),
+                }
+                for name, p in self.programs.items()
+            },
+            "purposes": {
+                name: {
+                    "allowed_roles": list(p.get("allowed_roles", [])),
+                    "actions": list(p.get("actions", [])),
+                }
+                for name, p in self.purposes.items()
+            },
+            "roles": {
+                "service": list(self.policy.get("service_roles", [])),
+                "human": list(self.policy.get("human_roles", [])),
+            },
+        }
+
     # ------------------------------------------------------------------ export
     def to_bundle(self) -> dict[str, Any]:
         """The catalogue as OPA ``data.catalog``."""

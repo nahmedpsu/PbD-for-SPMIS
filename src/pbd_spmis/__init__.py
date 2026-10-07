@@ -18,4 +18,4 @@ payments     Payment reference store and tokenized payment orchestration.
 retention    Retention and deletion engine.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

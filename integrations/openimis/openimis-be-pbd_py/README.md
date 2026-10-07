@@ -1,0 +1,70 @@
+# openimis-be-pbd
+
+Privacy-by-Design enforcement module for the openIMIS backend (and therefore for CORE-MIS
+powered by openIMIS). It connects an openIMIS assembly to the [PbD-SPMIS control
+plane](../../../README.md): purpose-bound, attribute-level release decisions, read auditing, and
+optional identifier vaulting, with no change to the existing openIMIS modules.
+
+## What it adds to openIMIS
+
+| openIMIS today | With this module |
+| --- | --- |
+| Role + geographic rights decide whether a user may run a query | The same rights, mapped to a PbD role, plus the **purpose** of the request decide **which attributes** are released and **in which form** (exact, band, assertion, district, masked, denied) |
+| `firstName`, `lastName`, `dob`, `jsonExt.national_id` returned to any permitted user | A case worker verifying eligibility receives the year of birth and `income: true` (below threshold); the national id is never returned; a finance officer sees a masked name |
+| Mutation log records writes | Every read of a mapped entity produces a `read_access` event in a hash-chained audit store, in addition to the control plane's decision log |
+| National identifiers stored in `individual.json_ext` | Opt-in: identifiers go to the Identity Vault at `createIndividual`; openIMIS keeps a person token |
+| No fail-closed behaviour on authorisation dependencies | If the control plane is unreachable, mapped fields error instead of leaking |
+
+## Install
+
+1. Run the control plane (`pbd-spmis serve all` or the Compose stack) and issue a service token:
+   `pbd-spmis token --sub svc:openimis --role REGISTRY_SERVICE --programs '*' --service`.
+2. Add the module to `openimis.json` of the backend assembly:
+
+   ```json
+   { "name": "pbd", "pip": "openimis-be-pbd==0.1.0" }
+   ```
+
+3. Add the middleware to the graphene settings of `openimis-be_py`:
+
+   ```python
+   GRAPHENE = {"MIDDLEWARE": ["pbd.middleware.PrivacyMiddleware", "openIMIS.tracer.TracerMiddleware", ...]}
+   ```
+
+4. Configure the module (ModuleConfiguration for `pbd`, or environment variables):
+
+   | Key | Default | Meaning |
+   | --- | --- | --- |
+   | `control_plane_url` | `http://localhost:8000` | all-in-one base URL (or `service_urls` per service) |
+   | `service_token` | – | bearer token for this openIMIS instance |
+   | `mapping_file` | bundled `mapping.yaml` | entity/field/role/purpose mapping |
+   | `require_purpose_header` | `false` | deny mapped reads without `X-Purpose` instead of using the operation default |
+   | `relationship_mode` | `assume` | `assume` (subject related to the request's program) or `resolver` (python path returning the programs a subject is related to) |
+   | `fail_closed` | `true` | error on control-plane unavailability |
+   | `audit_reads` | `true` | emit `read_access` events |
+   | `vault_identifiers` | `false` | move identifiers to the vault on create/update |
+
+5. Have the frontend (or API clients) send `X-Purpose` and, where relevant, `X-Program`,
+   `X-Case-ID` and `X-Device-Trust`. Without `X-Purpose` the mapping's per-operation default is
+   used, so existing clients keep working while they are migrated.
+
+## Mapping
+
+`integrations/openimis/mapping.yaml` declares, per deployment:
+
+- which GraphQL types and fields are which catalogue attributes (`IndividualGQLType.firstName`
+  → `name`, `jsonExt.national_id` → `national_id`, ...);
+- which openIMIS right codes map to which PbD role (ordered rules; first match wins);
+- the default purpose and action for each GraphQL operation;
+- benefit plan codes to catalogue programs;
+- the vaulting rules.
+
+## Limitations in this version
+
+- Subject relationships default to "the subject is related to the request's program". Use
+  `relationship_mode: resolver` with a function that reads `Beneficiary` rows for exact
+  cross-program isolation.
+- Decisions are taken per entity per request (not per field), which keeps the control-plane
+  round trips to one per entity type per request.
+- Vaulting rewrites `createIndividual`/`updateIndividual` only; bulk imports through
+  `individual_service` are audited but not vaulted yet.

@@ -125,7 +125,7 @@ def _require_mfa(ctx: RequestContext) -> None:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Break-Glass Manager", version="0.1.0")
+    app = FastAPI(title="PbD-SPMIS Break-Glass Manager", version="0.2.0")
     install_error_handlers(app)
 
     @app.get("/healthz")

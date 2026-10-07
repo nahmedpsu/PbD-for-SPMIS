@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: PbD-SPMIS Policy Decision Point
-  version: 0.1.0
+  version: 0.2.0
   x-privacy-headers:
   - X-Purpose
   - X-Program
@@ -51,6 +51,36 @@ paths:
                 type: object
                 additionalProperties: true
                 title: Response Policy Info V1 Policy Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /v1/catalog:
+    get:
+      summary: Catalog View
+      description: Non-sensitive catalogue view for SDKs and adapters (bands, thresholds,
+        classes).
+      operationId: catalog_view_v1_catalog_get
+      parameters:
+      - name: X-Correlation-ID
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Correlation-Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Catalog View V1 Catalog Get
         '422':
           description: Validation Error
           content:

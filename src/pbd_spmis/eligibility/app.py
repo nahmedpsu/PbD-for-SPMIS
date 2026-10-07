@@ -86,7 +86,7 @@ def evaluate_rules(rules: dict[str, Any], results: dict[str, Any]) -> str:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Eligibility Service", version="0.1.0")
+    app = FastAPI(title="PbD-SPMIS Eligibility Service", version="0.2.0")
     install_error_handlers(app)
 
     @app.get("/healthz")

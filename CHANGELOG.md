@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.0 (2026-10-07)
+
+Integration layer for existing MIS products.
+
+- Client SDK (`pbd_spmis.sdk`) for the control plane API v1: decisions with typed errors,
+  catalogue view, vault, broker, audit and break-glass clients, shared release transformations,
+  and the product-neutral entity/field/role/purpose mapping format.
+- `GET /pdp/v1/catalog`: non-sensitive catalogue view for clients.
+- `openimis-be-pbd`: openIMIS backend module (graphene middleware) that enforces purpose-bound,
+  attribute-level release on Individual/Beneficiary/Group, derives PbD roles from openIMIS right
+  codes, audits reads, fails closed, and optionally vaults national identifiers at creation.
+- Privacy gateway (`pbd-spmis gateway`): reverse proxy minimising GraphQL and FHIR/REST
+  responses for systems that cannot embed the module (legacy CORE-MIS, vendor APIs).
+- `date_of_birth` attribute with year precision; list-aware precision transforms.
+- Documentation: control plane API v1 and compatibility promise, openIMIS/CORE-MIS integration
+  guide, ADR 0006.
+
 ## 0.1.0 (2026-10-06)
 
 First public version: a complete, tested reference implementation of the privacy control plane

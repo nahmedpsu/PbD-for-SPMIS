@@ -28,11 +28,11 @@ jobs:
           chmod +x /usr/local/bin/opa
           opa version
       - name: Install
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,openimis,gateway]"
       - name: Lint
         run: |
-          ruff check src tests scripts
-          ruff format --check src tests scripts
+          ruff check src tests scripts integrations
+          ruff format --check src tests scripts integrations
       - name: Validate catalogue, bundle and contracts
         run: |
           pbd-spmis catalog validate

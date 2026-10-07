@@ -91,6 +91,22 @@ def contracts_export(check: bool = False) -> None:
 
 
 @app.command()
+def gateway(
+    config: Path = typer.Option(
+        ..., "--config", help="gateway YAML (see integrations/gateway/gateway.example.yaml)"
+    ),
+    host: str = "0.0.0.0",  # noqa: S104 - container default
+    port: int = 8080,
+) -> None:
+    """Run the privacy gateway in front of an existing MIS API (openIMIS, CORE-MIS, FHIR)."""
+    import uvicorn
+
+    from .gateway import GatewayConfig, create_gateway
+
+    uvicorn.run(create_gateway(GatewayConfig.from_file(config)), host=host, port=port)
+
+
+@app.command()
 def token(
     sub: str = typer.Option(..., help="actor id"),
     role: str = typer.Option(..., help="e.g. CASE_WORKER, ANALYST, PAYMENT_SERVICE"),

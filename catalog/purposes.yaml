@@ -24,6 +24,7 @@ purposes:
     release:
       name: exact
       contact: exact
+      date_of_birth: exact
       national_id: verify_only
       household_size: exact
       address: exact
@@ -57,6 +58,7 @@ purposes:
       address: "precision:district"
       employment_status: exact
       eligibility_outcome: exact
+      date_of_birth: "precision:year"
       national_id: verify_only
       bank_account: deny
       name: deny
@@ -98,6 +100,7 @@ purposes:
     release:
       name: exact
       contact: exact
+      date_of_birth: exact
       address: exact
       household_size: exact
       income: band
@@ -173,6 +176,7 @@ purposes:
       disability_status: "assertion:eligible"
       employment_status: exact
       enrollment_status: exact
+      date_of_birth: "precision:year"
       name: deny
       contact: deny
       national_id: deny

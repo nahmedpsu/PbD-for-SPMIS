@@ -67,7 +67,7 @@ class DecisionResponse(BaseModel):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Policy Decision Point", version="0.1.0")
+    app = FastAPI(title="PbD-SPMIS Policy Decision Point", version="0.2.0")
     install_error_handlers(app)
     settings = get_settings()
     opa = OpaEngine(settings.opa_url) if settings.policy_engine == "opa" else None
@@ -93,6 +93,11 @@ def create_app() -> FastAPI:
             "attributes": sorted(cat.attributes),
             "fail_closed": settings.fail_closed,
         }
+
+    @app.get("/v1/catalog")
+    def catalog_view(ctx: RequestContext = Depends(service_context)) -> dict[str, Any]:
+        """Non-sensitive catalogue view for SDKs and adapters (bands, thresholds, classes)."""
+        return get_catalog().view()
 
     @app.post("/v1/decisions", response_model=DecisionResponse)
     def decide(req: DecisionRequest, ctx: RequestContext = Depends(service_context)) -> DecisionResponse:

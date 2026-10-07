@@ -45,6 +45,17 @@
         ],
         "store": "identity_vault"
       },
+      "date_of_birth": {
+        "category": "identity",
+        "class": "C3",
+        "description": "Date of birth (ISO 8601).",
+        "disclosures": [
+          "exact",
+          "precision:year",
+          "deny"
+        ],
+        "store": "social_registry"
+      },
       "disability_status": {
         "category": "health",
         "class": "C4",
@@ -351,6 +362,7 @@
           "bank_account": "deny",
           "case_narrative": "deny",
           "contact": "deny",
+          "date_of_birth": "precision:year",
           "disability_status": "assertion:eligible",
           "employment_status": "exact",
           "enrollment_status": "exact",
@@ -382,6 +394,7 @@
           "bank_account": "deny",
           "case_narrative": "exact",
           "contact": "exact",
+          "date_of_birth": "exact",
           "disability_status": "exact",
           "enrollment_status": "exact",
           "household_size": "exact",
@@ -414,6 +427,7 @@
           "address": "precision:district",
           "bank_account": "deny",
           "contact": "deny",
+          "date_of_birth": "precision:year",
           "disability_status": "assertion:eligible",
           "eligibility_outcome": "exact",
           "employment_status": "exact",
@@ -606,6 +620,7 @@
         "release": {
           "address": "exact",
           "contact": "exact",
+          "date_of_birth": "exact",
           "disability_status": "exact",
           "employment_status": "exact",
           "household_size": "exact",

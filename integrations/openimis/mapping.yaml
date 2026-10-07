@@ -1,0 +1,135 @@
+# openIMIS <-> PbD-SPMIS mapping.
+#
+# Consumed by the openIMIS backend module (integrations/openimis/openimis-be-pbd_py) and by the
+# privacy gateway. It answers four questions the control plane needs and openIMIS does not have:
+#
+#   1. Which GraphQL types/fields are which catalogue attributes (and therefore which class)?
+#   2. Which PbD role does an openIMIS user hold, derived from their numeric right codes?
+#   3. Which purpose applies to a GraphQL operation when the client sends no X-Purpose header?
+#   4. Which program does a benefit plan correspond to?
+#
+# Everything here is configuration for a deployment; the numbers are openIMIS reference right
+# codes (core 1.x / social protection modules) and should be checked against the deployment's
+# role configuration.
+version: 1
+
+entities:
+  Individual:
+    gql_types: [IndividualGQLType, IndividualNode]
+    # Where to find the subject identifier on a resolved object (first match wins). When the
+    # vaulting mode is on, jsonExt.pbd_person_token is the PbD person token; otherwise the
+    # openIMIS uuid is used as an opaque subject identifier.
+    subject_token_paths: [jsonExt.pbd_person_token, json_ext.pbd_person_token, uuid, id]
+    fields:
+      firstName: name
+      lastName: name
+      dob: date_of_birth
+      jsonExt.national_id: national_id
+      jsonExt.email: contact
+      jsonExt.phone: contact
+      jsonExt.income: income
+      jsonExt.household_size: household_size
+      jsonExt.disability_status: disability_status
+      jsonExt.employment_status: employment_status
+      jsonExt.bank_account: bank_account
+      jsonExt.address: address
+      jsonExt.vulnerability: vulnerability_attributes
+    # Attributes evaluated for this entity even when the query asks for a subset (one decision
+    # per entity per request, cached).
+    attributes: [name, date_of_birth, national_id, contact, income, household_size, disability_status,
+                 employment_status, bank_account, address, vulnerability_attributes]
+
+  Beneficiary:
+    gql_types: [BeneficiaryGQLType, BeneficiaryNode]
+    subject_token_paths: [individual.jsonExt.pbd_person_token, individual.uuid, individual.id, id]
+    fields:
+      status: enrollment_status
+      jsonExt.entitlement: entitlement
+      jsonExt.payment_status: payment_status
+      jsonExt.case_notes: case_narrative
+    attributes: [enrollment_status, entitlement, payment_status, case_narrative]
+    # Nested individual objects are handled by the Individual entity rules.
+
+  Group:
+    gql_types: [GroupGQLType, GroupNode]
+    subject_token_paths: [uuid, id]
+    fields:
+      jsonExt.address: address
+      jsonExt.household_size: household_size
+      jsonExt.income: income
+    attributes: [address, household_size, income]
+
+  # FHIR R4 REST resources (api_fhir_r4 module), used by the gateway.
+  Patient:
+    rest_prefixes: ["/api/api_fhir_r4/Patient"]
+    subject_token_paths: [id]
+    fields:
+      name: name
+      birthDate: date_of_birth
+      identifier: national_id
+      telecom: contact
+      address: address
+    attributes: [name, date_of_birth, national_id, contact, address]
+
+# Benefit plan code -> catalogue program. A deployment maps its own codes here.
+programs:
+  by_benefit_plan_code:
+    CASH: cash_assistance
+    DISA: disability_allowance
+    SCHF: school_feeding
+  default: cash_assistance
+
+# openIMIS right codes -> PbD role. Ordered; the first rule whose rights match wins.
+# any_rights: the user holds at least one of the codes; all_rights: holds all of them.
+roles:
+  - role: PRIVACY_ADMIN
+    all_rights: [152101, 122002]          # role query + role create (administers roles)
+  - role: ANALYST
+    any_rights: [131200]                  # reports
+    none_of: [159002, 170002]             # ...but cannot create individuals/beneficiaries
+  - role: SUPERVISOR
+    all_rights: [170003, 170004]          # update + delete beneficiary
+  - role: FINANCE_OFFICER
+    any_rights: [201001, 201002]          # payroll search / create
+  - role: GRIEVANCE_OFFICER
+    any_rights: [127001]                  # grievance tickets
+  - role: REGISTRATION_OFFICER
+    any_rights: [159002, 159003]          # create / update individual
+  - role: CASE_WORKER
+    any_rights: [170001, 159001]          # search beneficiary / individual
+  - role: CITIZEN
+    any_rights: []                        # never matched by rights; reserved for portal tokens
+
+# GraphQL operation (top-level field) -> default purpose when X-Purpose is absent.
+# Operations not listed are not privacy-mapped and pass through unchanged.
+operations:
+  individual: {purpose: registration}
+  individuals: {purpose: registration}
+  group: {purpose: registration}
+  groupIndividual: {purpose: registration}
+  beneficiary: {purpose: enrollment}
+  groupBeneficiary: {purpose: enrollment}
+  benefitPlan: {purpose: enrollment}
+  beneficiaryExport: {purpose: analytics_reporting, action: export}
+  individualExport: {purpose: analytics_reporting, action: export}
+  groupExport: {purpose: analytics_reporting, action: export}
+  createIndividual: {purpose: registration, action: write, vault: true}
+  updateIndividual: {purpose: registration, action: write, vault: true}
+  createBeneficiary: {purpose: enrollment, action: write}
+  updateBeneficiary: {purpose: enrollment, action: write}
+
+# Identifier vaulting (opt-in): on these mutations the listed input fields are moved to the
+# Identity Vault and replaced by the person token.
+vault:
+  enabled: false
+  input_fields:
+    createIndividual:
+      national_id: input.jsonExt.national_id
+      name: [input.firstName, input.lastName]
+      contact: input.jsonExt.email
+    updateIndividual:
+      national_id: input.jsonExt.national_id
+      name: [input.firstName, input.lastName]
+      contact: input.jsonExt.email
+  token_field: input.jsonExt.pbd_person_token
+  placeholder: vaulted

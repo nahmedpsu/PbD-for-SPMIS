@@ -113,7 +113,7 @@ def _status_view(i: Instruction) -> dict[str, Any]:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Payments", version="0.1.0")
+    app = FastAPI(title="PbD-SPMIS Payments", version="0.2.0")
     install_error_handlers(app)
     provider = MockPaymentProvider()
 

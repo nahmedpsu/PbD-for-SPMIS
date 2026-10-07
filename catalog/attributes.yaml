@@ -37,6 +37,13 @@ attributes:
     description: Phone number or e-mail used for notices.
     disclosures: [exact, masked, deny]
 
+  date_of_birth:
+    class: C3
+    category: identity
+    store: social_registry
+    description: Date of birth (ISO 8601).
+    disclosures: [exact, "precision:year", deny]
+
   income:
     class: C4
     category: socioeconomic
