@@ -402,6 +402,66 @@ def main() -> int:
     )
     configure({}, control_plane=cp)
 
+    print("== 10. exact cross-program isolation with the Beneficiary-row relationship resolver")
+    configure(
+        {"relationship_mode": "resolver", "relationship_resolver": "pbd.relationships.from_beneficiaries"},
+        control_plane=cp,
+    )
+    q_amina = (
+        'query { individual(firstName_Iexact: "Amina", lastName_Iexact: "Example") '
+        "{ edges { node { uuid firstName dob jsonExt } } } }"
+    )
+    status, body = gql(
+        client, tw, q_amina, **{"X-Purpose": "eligibility_verification", "X-Program": "disability_allowance"}
+    )
+    check(
+        "a worker acting for another program is refused (NO_SUBJECT_RELATIONSHIP) for people enrolled only in CASH",
+        bool(body.get("errors")) and "NO_SUBJECT_RELATIONSHIP" in json.dumps(body["errors"]),
+        body.get("errors"),
+    )
+    status, body = gql(
+        client, tw, q_amina, **{"X-Purpose": "eligibility_verification", "X-Program": "cash_assistance"}
+    )
+    nodes = [n for n in nodes_of(body, "individual") if n and n["uuid"] == str(amina.uuid)]
+    check(
+        "the same worker acting for CASH still gets the minimised view",
+        status == 200 and not body.get("errors") and len(nodes) == 1 and nodes[0]["firstName"] == "***",
+        body,
+    )
+    configure({}, control_plane=cp)
+
+    print("== 11. migrating identifiers already stored in openIMIS (manage.py pbd_vault_identifiers)")
+    from io import StringIO  # noqa: PLC0415
+
+    out = StringIO()
+    call_command("pbd_vault_identifiers", "--dry-run", "--username", "pbdofficer", stdout=out)
+    check(
+        "dry run reports without writing",
+        "DRY RUN" in out.getvalue() and "vaulted=" in out.getvalue(),
+        out.getvalue(),
+    )
+    before = Individual.objects.get(id=bo.id).json_ext
+    out = StringIO()
+    call_command("pbd_vault_identifiers", "--username", "pbdofficer", stdout=out)
+    after = Individual.objects.get(id=bo.id).json_ext
+    check(
+        "existing records rewritten: placeholder + person token, identifier gone",
+        before.get("national_id") == "NID-1002"
+        and after.get("national_id") == "vaulted"
+        and str(after.get("pbd_person_token", "")).startswith("P-")
+        and after.get("income") == 900,
+        after,
+    )
+    dedup = cp.vault.tokenize(national_id="NID-1002", name="Bo Example", program="cash_assistance")
+    check(
+        "migrated identity is in the vault once",
+        dedup["person_token"] == after.get("pbd_person_token") and dedup["created"] is False,
+        dedup,
+    )
+    out = StringIO()
+    call_command("pbd_vault_identifiers", "--username", "pbdofficer", stdout=out)
+    check("rerun is a no-op (all skipped)", "vaulted=0" in out.getvalue(), out.getvalue())
+
     passed = sum(1 for r in RESULTS if r["ok"])
     print(
         f"\n{passed}/{len(RESULTS)} checks passed against openIMIS core {_version('openimis-be-core')}, "

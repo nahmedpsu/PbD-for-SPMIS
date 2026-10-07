@@ -97,7 +97,7 @@ class GatewayConfig:
 
 
 def create_gateway(cfg: GatewayConfig, *, upstream_transport: httpx.BaseTransport | None = None) -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Privacy Gateway", version="0.2.1")
+    app = FastAPI(title="PbD-SPMIS Privacy Gateway", version="0.2.2")
     upstream = httpx.Client(base_url=cfg.upstream, transport=upstream_transport, timeout=30.0)
 
     @app.get("/healthz")

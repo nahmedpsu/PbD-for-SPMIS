@@ -127,7 +127,7 @@ def subject_programs(ctx: RequestContext, person_token: str) -> list[str]:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Identity Vault", version="0.2.1")
+    app = FastAPI(title="PbD-SPMIS Identity Vault", version="0.2.2")
     install_error_handlers(app)
 
     @app.get("/healthz")

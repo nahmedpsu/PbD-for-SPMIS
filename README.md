@@ -129,7 +129,7 @@ same query under `registration` by a registration officer returns the full recor
 control plane being down fails closed, and with `vault_identifiers: true` national identifiers
 never reach the openIMIS database. Systems that cannot embed the module (legacy Java CORE-MIS,
 vendor APIs) run behind `pbd-spmis gateway`. The module is validated inside the genuine openIMIS
-backend assembly (core 1.11, individual 1.4, social protection 1.5 on PostgreSQL 16): 18 of 18
+backend assembly (core 1.11, individual 1.4, social protection 1.5 on PostgreSQL 16): 24 of 24
 checks pass through openIMIS's own GraphQL view. Details, mapping and limits:
 [docs/integrations/openimis.md](docs/integrations/openimis.md); outreach drafts for the openIMIS
 and GovStack communities: [docs/outreach](docs/outreach).
@@ -194,9 +194,8 @@ adaptation and procurement language, not a drop-in production system. Production
 documented in [docs/deployment.md](docs/deployment.md) (OIDC/JWKS, KMS/HSM key provider,
 PostgreSQL roles per store, OPA bundle distribution, mTLS). Planned next:
 
-- A relationship resolver reading `Beneficiary` rows for exact cross-program isolation (the
-  module itself is validated inside the real openIMIS backend, see `integrations/openimis/validation`).
-- A one-off migration job that vaults identifiers already stored in `individual.json_ext`.
+- Vaulting of records created through openIMIS bulk imports at import time (today they are
+  caught by the `pbd_vault_identifiers` migration command).
 - Grievance service and citizen portal flows (notice versioning, data-subject requests).
 - Offline/assisted-channel packages with scoped, short-lived tokens.
 - Pluggable adapters for real registries (signed requests, mTLS) and a payment provider SDK.

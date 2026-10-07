@@ -318,3 +318,75 @@ def test_promise_results_are_transformed():
 
     assert _then(FakePromise(5), lambda v: v + 1).value == 6
     assert _then(5, lambda v: v + 1) == 6
+
+
+# ---------------------------------------------------------------------- relationship resolver and migration
+
+
+def test_relationship_resolver_maps_benefit_plan_codes(module):
+    from pbd.relationships import from_beneficiaries
+
+    class Individual:  # plain object with explicit codes; the ORM path runs in the openIMIS validation
+        pbd_benefit_plan_codes = ["CASH", "DISA", "UNKNOWN"]
+
+    assert from_beneficiaries(Individual()) == ["cash_assistance", "disability_allowance"]
+
+    class Beneficiary:
+        pbd_benefit_plan_codes = []
+
+    assert from_beneficiaries(Beneficiary()) == []
+
+
+def test_vault_record_rewrites_json_ext_and_is_idempotent():
+    from pbd.migration import migrate_individuals, vault_record
+
+    calls = []
+
+    def tokenize(**kw):
+        calls.append(kw)
+        return {"person_token": "P-MIGRATED", "created": True}
+
+    ext = {"national_id": "NID-1002", "email": "bo@example.test", "income": 900}
+    new = vault_record(ext, name="Bo Example", program="cash_assistance", vault=None, tokenize=tokenize)
+    assert new == {
+        "national_id": "vaulted",
+        "email": "vaulted",
+        "income": 900,
+        "pbd_person_token": "P-MIGRATED",
+    }
+    assert calls[0]["national_id"] == "NID-1002" and calls[0]["contact"] == "bo@example.test"
+    assert ext["national_id"] == "NID-1002"  # input not mutated
+    assert (
+        vault_record(new, name="Bo Example", program="cash_assistance", vault=None, tokenize=tokenize) is None
+    )
+    assert (
+        vault_record({"income": 1}, name="x", program="cash_assistance", vault=None, tokenize=tokenize)
+        is None
+    )
+
+    class Ind:
+        def __init__(self, ext):
+            self.id, self.first_name, self.last_name, self.json_ext, self.saved = (
+                1,
+                "Bo",
+                "Example",
+                ext,
+                False,
+            )
+
+        def save(self):
+            self.saved = True
+
+    class FakeVault:
+        class vault:  # noqa: N801 - mimics PrivacyControlPlane.vault
+            @staticmethod
+            def tokenize(**kw):
+                return {"person_token": "P-X", "created": True}
+
+    rows = [Ind({"national_id": "NID-1"}), Ind({"national_id": "vaulted"}), Ind({})]
+    dry = migrate_individuals(
+        rows, program="cash_assistance", vault=FakeVault(), dry_run=True, log=lambda m: None
+    )
+    assert dry == {"scanned": 3, "vaulted": 1, "skipped": 2, "failed": 0} and not rows[0].saved
+    live = migrate_individuals(rows, program="cash_assistance", vault=FakeVault(), log=lambda m: None)
+    assert live["vaulted"] == 1 and rows[0].saved and rows[0].json_ext["pbd_person_token"] == "P-X"

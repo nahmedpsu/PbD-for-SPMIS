@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pbd-spmis"
-version = "0.2.1"
+version = "0.2.2"
 description = "Privacy-by-Design control plane and reference Social Protection MIS: purpose-bound authorization, selective disclosure, tokenized identity, tamper-evident audit."
 readme = "README.md"
 requires-python = ">=3.11"

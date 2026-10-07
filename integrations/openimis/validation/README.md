@@ -9,7 +9,7 @@ unit tests in `tests/test_openimis_module.py` need no openIMIS.
 ## Last result
 
 ```
-18/18 checks passed against openIMIS core 1.11.0, individual 1.4.0, social_protection 1.5.0,
+24/24 checks passed against openIMIS core 1.11.0, individual 1.4.0, social_protection 1.5.0,
 Django 4.2.30, graphene 2.1.9 (PostgreSQL 16)
 ```
 
@@ -29,6 +29,8 @@ The exact outcome of the last local run is in `last_run.json`.
 | 7 | one `read_access` audit event per entity per request with the request's correlation id; audit chain verifies |
 | 8 | `createIndividual` with vaulting on: openIMIS stores the placeholder and the person token, never the identifier; the vault deduplicates it |
 | 9 | control plane unreachable: mapped fields error and are redacted (fail closed) |
+| 10 | `relationship_mode: resolver`: a worker acting for `disability_allowance` is refused (`NO_SUBJECT_RELATIONSHIP`) for people enrolled only in the CASH plan, and still served for `cash_assistance` |
+| 11 | `manage.py pbd_vault_identifiers`: dry run, migration of existing records (placeholder + token, identifier gone), vault deduplication, idempotent rerun |
 
 ## Prerequisites
 

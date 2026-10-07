@@ -135,7 +135,7 @@ def _parse_attributes(attributes: str | None) -> list[str]:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Social Registry", version="0.2.1")
+    app = FastAPI(title="PbD-SPMIS Social Registry", version="0.2.2")
     install_error_handlers(app)
 
     @app.get("/healthz")

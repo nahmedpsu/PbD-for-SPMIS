@@ -43,7 +43,7 @@ optional identifier vaulting, with no change to the existing openIMIS modules.
    | `service_token` | – | bearer token for this openIMIS instance |
    | `mapping_file` | bundled `mapping.yaml` | entity/field/role/purpose mapping |
    | `require_purpose_header` | `false` | deny mapped reads without `X-Purpose` instead of using the operation default |
-   | `relationship_mode` | `assume` | `assume` (subject related to the request's program) or `resolver` (python path returning the programs a subject is related to) |
+   | `relationship_mode` | `assume` | `assume` (subject related to the request's program) or `resolver` (exact: `relationship_resolver: pbd.relationships.from_beneficiaries` reads `Beneficiary`/`GroupBeneficiary` rows) |
    | `fail_closed` | `true` | error on control-plane unavailability |
    | `audit_reads` | `true` | emit `read_access` events |
    | `vault_identifiers` | `false` | move identifiers to the vault on create/update |
@@ -52,6 +52,19 @@ optional identifier vaulting, with no change to the existing openIMIS modules.
 5. Have the frontend (or API clients) send `X-Purpose` and, where relevant, `X-Program`,
    `X-Case-ID` and `X-Device-Trust`. Without `X-Purpose` the mapping's per-operation default is
    used, so existing clients keep working while they are migrated.
+
+## Migrating identifiers already stored in openIMIS
+
+```bash
+manage.py pbd_vault_identifiers --dry-run --username Admin
+manage.py pbd_vault_identifiers --program cash_assistance --batch 500 --username Admin
+```
+
+`--username` names the existing openIMIS user the audited saves are attributed to.
+
+Every `Individual` whose `json_ext` carries an identifier is proofed in the Identity Vault under
+the `identity_proofing` purpose; openIMIS keeps the placeholder and the person token. Rows already
+vaulted are skipped, so the command is safe to rerun, and the vault deduplicates identifiers.
 
 ## Mapping
 
@@ -68,7 +81,7 @@ optional identifier vaulting, with no change to the existing openIMIS modules.
 
 `integrations/openimis/validation/run_validation.py` runs the module inside the genuine
 `openimis-be_py` assembly with openIMIS core 1.11.0, individual 1.4.0 and social_protection 1.5.0
-on PostgreSQL 16 (Django 4.2, graphene 2): 18 of 18 checks pass, covering minimised views per
+on PostgreSQL 16 (Django 4.2, graphene 2): 24 of 24 checks pass, covering minimised views per
 purpose through openIMIS's own GraphQL view and JWTs, default purposes, role derivation from
 right codes, pass-through, low-trust downgrades, read auditing, identifier vaulting and
 fail-closed behaviour. See the validation README for the recipe and for what real openIMIS
@@ -76,10 +89,10 @@ taught the module (non-null fields, typed fields, graphene 2 promises, middlewar
 
 ## Limitations in this version
 
-- Subject relationships default to "the subject is related to the request's program". Use
-  `relationship_mode: resolver` with a function that reads `Beneficiary` rows for exact
-  cross-program isolation.
+- Subject relationships default to "the subject is related to the request's program"; switch to
+  `relationship_mode: resolver` (bundled `pbd.relationships.from_beneficiaries`) for exact
+  cross-program isolation at the cost of one query per subject and request.
 - Decisions are taken per entity per request (not per field), which keeps the control-plane
   round trips to one per entity type per request.
-- Vaulting rewrites `createIndividual`/`updateIndividual` only; bulk imports through
-  `individual_service` are audited but not vaulted yet.
+- Vaulting rewrites `createIndividual`/`updateIndividual`; records created by bulk imports are
+  caught by the `pbd_vault_identifiers` command rather than at import time.

@@ -102,7 +102,7 @@ def compute_expiry(record_type: str, created_at: datetime) -> tuple[datetime, st
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Retention Engine", version="0.2.1")
+    app = FastAPI(title="PbD-SPMIS Retention Engine", version="0.2.2")
     install_error_handlers(app)
 
     @app.get("/healthz")

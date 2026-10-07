@@ -36,11 +36,11 @@
               },
               {
                 "node": {
-                  "uuid": "01a1147c-fe00-78e0-b8f7-555abb6b2c4d",
+                  "uuid": "01a115a5-0324-76f8-938c-b2b8eee2accf",
                   "firstName": "***",
                   "lastName": "***",
                   "dob": "1988-01-01",
-                  "jsonExt": "{\"income\": true, \"national_id\": {\"verified\": true}, \"pbd_person_token\": \"P-RDDWY5IJ\"}"
+                  "jsonExt": "{\"income\": true, \"national_id\": {\"verified\": true}, \"pbd_person_token\": \"P-M11O19R4\"}"
                 }
               }
             ]
@@ -127,7 +127,7 @@
             "firstName"
           ],
           "extensions": {
-            "decision_id": "PD-1a1147df089-1WMWXG",
+            "decision_id": "PD-1a115a57ccc-KN3X4A",
             "reason_codes": [
               "ROLE_NOT_PERMITTED"
             ]
@@ -149,7 +149,7 @@
             "firstName"
           ],
           "extensions": {
-            "decision_id": "PD-1a1147df089-1WMWXG",
+            "decision_id": "PD-1a115a57ccc-KN3X4A",
             "reason_codes": [
               "ROLE_NOT_PERMITTED"
             ]
@@ -171,7 +171,7 @@
             "firstName"
           ],
           "extensions": {
-            "decision_id": "PD-1a1147df089-1WMWXG",
+            "decision_id": "PD-1a115a57ccc-KN3X4A",
             "reason_codes": [
               "ROLE_NOT_PERMITTED"
             ]
@@ -245,9 +245,9 @@
       "ok": true,
       "detail": [
         {
-          "event_id": "AE-55S41U2J2BXD",
+          "event_id": "AE-OG96KL9B9NAL",
           "seq": 2,
-          "ts": "2026-10-07T03:52:40.233853+00:00",
+          "ts": "2026-10-07T09:15:29.245023+00:00",
           "event_type": "read_access",
           "service": "openimis",
           "actor_id": "openimis:individual",
@@ -266,7 +266,7 @@
             "address"
           ],
           "outcome": "allow",
-          "decision_id": "PD-1a1147deff9-EW3K5F",
+          "decision_id": "PD-1a115a57c16-M30CGE",
           "reason_codes": [],
           "obligations": [
             "expire_response:24h",
@@ -291,8 +291,8 @@
               "vulnerability_attributes": "deny"
             }
           },
-          "prev_hash": "b769b7982f23525d0ebd6ed298b5741498e9c34421af1fa3ea6b7df10b55efef",
-          "hash": "5855333aebfb4f98330f0b3cf66deeea71f499265350a8b5419b43d379c971d9"
+          "prev_hash": "09020d766868fd4209a49f43da90087f39b269438b1589143e0530530460d65b",
+          "hash": "60a2df08e00e18dd68c2a7e4144be90eb7d489653d461370d4b90a8b76b2d6ea"
         }
       ]
     },
@@ -302,7 +302,7 @@
       "detail": {
         "ok": true,
         "checked": 13,
-        "head": "b1bebe09d3ce4851c226cfe98b0a94408ac811d10d3950f668ec6ceaf5bb0682"
+        "head": "071209487d1a216a149a4d8d545c99c90a03b7cd40fb8d12aaee0eb782a89784"
       }
     },
     {
@@ -323,14 +323,14 @@
         "email": "vaulted",
         "income": 240,
         "national_id": "vaulted",
-        "pbd_person_token": "P-DYOUGH4S"
+        "pbd_person_token": "P-J0A7FH3Z"
       }
     },
     {
       "check": "vault holds the identity and dedups it",
       "ok": true,
       "detail": {
-        "person_token": "P-DYOUGH4S",
+        "person_token": "P-J0A7FH3Z",
         "created": false
       }
     },
@@ -387,6 +387,82 @@
           ]
         }
       ]
+    },
+    {
+      "check": "a worker acting for another program is refused (NO_SUBJECT_RELATIONSHIP) for people enrolled only in CASH",
+      "ok": true,
+      "detail": [
+        {
+          "message": "privacy: denied (NO_SUBJECT_RELATIONSHIP)",
+          "locations": [
+            {
+              "line": 1,
+              "column": 97
+            }
+          ],
+          "path": [
+            "individual",
+            "edges",
+            0,
+            "node",
+            "firstName"
+          ],
+          "extensions": {
+            "decision_id": "PD-1a115a57ed4-WKVZ5S",
+            "reason_codes": [
+              "NO_SUBJECT_RELATIONSHIP"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "check": "the same worker acting for CASH still gets the minimised view",
+      "ok": true,
+      "detail": {
+        "data": {
+          "individual": {
+            "edges": [
+              {
+                "node": {
+                  "uuid": "01a1146b-aea0-77dc-b698-a6b8120eb50e",
+                  "firstName": "***",
+                  "dob": "1990-01-01",
+                  "jsonExt": "{\"income\": true, \"address\": {\"district\": \"North\"}, \"custom_flag\": \"keep\", \"national_id\": {\"verified\": true}, \"household_size\": 4, \"disability_status\": false}"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "check": "dry run reports without writing",
+      "ok": true,
+      "detail": "would vault individual 01a1146b-aea0-77dc-b698-a6b8120eb50e\nwould vault individual 01a1146b-aea8-7a6c-990a-4652cf3f364f\nDRY RUN scanned=3 vaulted=2 skipped=1 failed=0\n"
+    },
+    {
+      "check": "existing records rewritten: placeholder + person token, identifier gone",
+      "ok": true,
+      "detail": {
+        "income": 900,
+        "national_id": "vaulted",
+        "household_size": 1,
+        "pbd_person_token": "P-D3CMDJJ3"
+      }
+    },
+    {
+      "check": "migrated identity is in the vault once",
+      "ok": true,
+      "detail": {
+        "person_token": "P-D3CMDJJ3",
+        "created": false
+      }
+    },
+    {
+      "check": "rerun is a no-op (all skipped)",
+      "ok": true,
+      "detail": "scanned=3 vaulted=0 skipped=3 failed=0\n"
     }
   ],
   "versions": {

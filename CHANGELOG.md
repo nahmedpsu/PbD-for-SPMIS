@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.2 (2026-10-07)
+
+- `pbd.relationships.from_beneficiaries`: exact subject relationships from openIMIS
+  `Beneficiary`/`GroupBeneficiary` rows (`relationship_mode: resolver`), giving true
+  cross-program isolation; validated inside real openIMIS.
+- `manage.py pbd_vault_identifiers`: idempotent, batched migration of identifiers already stored
+  in `individual.json_ext` into the Identity Vault, with `--dry-run`; validated inside real
+  openIMIS (24/24 checks now).
+
 ## 0.2.1 (2026-10-07)
 
 - `openimis-be-pbd` validated inside the real openIMIS backend assembly (core 1.11.0, individual

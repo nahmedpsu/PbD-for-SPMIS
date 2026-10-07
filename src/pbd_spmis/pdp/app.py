@@ -67,7 +67,7 @@ class DecisionResponse(BaseModel):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Policy Decision Point", version="0.2.1")
+    app = FastAPI(title="PbD-SPMIS Policy Decision Point", version="0.2.2")
     install_error_handlers(app)
     settings = get_settings()
     opa = OpaEngine(settings.opa_url) if settings.policy_engine == "opa" else None

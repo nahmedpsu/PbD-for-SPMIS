@@ -95,7 +95,7 @@ the genuine `openimis-be_py` assembly with the published modules (core 1.11.0, i
 social_protection 1.5.0, calculation, workflow, tasks_management, location and their migration
 dependencies) on PostgreSQL 16 with openIMIS's database scripts, seeds roles with the reference
 right codes, and issues GraphQL requests through openIMIS's own view with openIMIS-issued JWTs.
-Result: 18 of 18 checks pass (Django 4.2.30, graphene 2.1.9). The run surfaced four
+Result: 24 of 24 checks pass (Django 4.2.30, graphene 2.1.9), including exact cross-program isolation through the bundled Beneficiary-row relationship resolver and the identifier migration command. The run surfaced four
 openIMIS-specific behaviours that are now built into the module and its unit tests: non-nullable
 personal fields receive a redaction marker instead of null, `Date` fields receive date values at
 the released precision, graphene 2 promises are chained, and the middleware must be last in the
