@@ -1,0 +1,65 @@
+name: openIMIS validation
+
+# Runs openimis-be-pbd inside the real openIMIS backend assembly (Django 4.2 / graphene 2 /
+# PostgreSQL 16). Heavier than the main CI, so it runs on demand and weekly.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+  push:
+    paths:
+      - "integrations/openimis/**"
+      - "src/pbd_spmis/sdk/**"
+      - ".github/workflows/openimis-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_NAME: imis
+      DB_USER: imis
+      DB_PASSWORD: imis
+      OPENIMIS_BE_DIR: ${{ github.workspace }}/openimis-be_py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Start PostgreSQL 16 and install postgres-json-schema
+        run: |
+          sudo systemctl start postgresql
+          sudo -u postgres psql -c "create user imis with password 'imis' superuser;" -c "create database imis owner imis;"
+          git clone --depth 1 https://github.com/gavinwahl/postgres-json-schema /tmp/pjs
+          cd /tmp/pjs && sudo make install
+          PGPASSWORD=imis psql -h 127.0.0.1 -U imis -d imis -c 'CREATE EXTENSION "postgres-json-schema";'
+      - name: Apply the openIMIS database scripts
+        run: |
+          git clone --depth 1 https://github.com/openimis/database_postgresql /tmp/dbpg
+          cd "/tmp/dbpg/database scripts"
+          for f in 00_dump.sql 02_aux_functions.sql 03_views.sql 04_functions.sql 05_stored_procs.sql; do
+            PGPASSWORD=imis psql -h 127.0.0.1 -U imis -d imis -q -v ON_ERROR_STOP=1 -f "$f"
+          done
+      - name: Check out the openIMIS backend assembly
+        run: git clone --depth 1 https://github.com/openimis/openimis-be_py "$OPENIMIS_BE_DIR"
+      - name: Install openIMIS and this repository
+        run: |
+          grep -vE '^\s*#|^\s*$|mssql-django|pyodbc|debugpy|flake8|coverage' "$OPENIMIS_BE_DIR/requirements.txt" > /tmp/req.txt
+          pip install -r /tmp/req.txt "setuptools<81" "sentry-sdk>=1.29"
+          pip install openimis-be-core==1.11.0 openimis-be-individual==1.4.0 openimis-be-social-protection==1.5.0 \
+            openimis-be-calculation openimis-be-workflow openimis-be-tasks-management openimis-be-location \
+            openimis-be-contribution-plan openimis-be-product openimis-be-medical openimis-be-medical-pricelist
+          pip install -e . && pip install --no-deps -e integrations/openimis/openimis-be-pbd_py
+      - name: Run the validation inside openIMIS
+        run: python integrations/openimis/validation/run_validation.py
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openimis-validation-report
+          path: integrations/openimis/validation/last_run.json

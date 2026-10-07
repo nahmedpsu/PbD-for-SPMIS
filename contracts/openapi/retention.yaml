@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: PbD-SPMIS Retention Engine
-  version: 0.2.0
+  version: 0.2.1
   x-privacy-headers:
   - X-Purpose
   - X-Program

@@ -22,12 +22,13 @@ Add to settings::
 from __future__ import annotations
 
 import contextlib
+import datetime as dt
 import json
 import uuid
 from collections.abc import Callable
 from typing import Any
 
-from graphql import GraphQLError
+from graphql import GraphQLError, GraphQLNonNull
 
 from pbd_spmis.sdk import Decision, PolicyDeniedError, UnavailableError, transform
 from pbd_spmis.sdk.mapping import EntityMapping, get_path, to_snake
@@ -94,9 +95,10 @@ class PrivacyMiddleware:
         context = info.context
         st = _state(context)
 
-        if parent in ("Query", "Mutation") and root is None:
-            self._enter_operation(st, info, args, cfg)
-            if parent == "Mutation" and cfg.vault_identifiers:
+        root_kind = _root_kind(info)
+        if root_kind and root is None:
+            self._enter_operation(st, info, args, cfg, is_mutation=root_kind == "mutation")
+            if root_kind == "mutation" and cfg.vault_identifiers:
                 op = cfg.mapping.operation(info.field_name) or {}
                 if op.get("vault"):
                     vaulting.rewrite_mutation_args(args, info.field_name, st, cfg)
@@ -115,21 +117,30 @@ class PrivacyMiddleware:
         decision = self._decision_for(st, entity, root, context, cfg)
         value = next_(root, info, **args)
         if decision is None or not decision.allow:
-            return None
+            return _coerce(None, info, cfg.redaction_marker)
         program = st.program or cfg.mapping.default_program
         catalog = cfg.control_plane.catalog()
+        marker = cfg.redaction_marker
         if attr is not None:
-            return transform(attr, value, decision.mode(attr), program=program, catalog=catalog)
-        return _transform_container(value, sub, decision, program, catalog)
+            mode = decision.mode(attr)
+            return _then(
+                value,
+                lambda v: _coerce(transform(attr, v, mode, program=program, catalog=catalog), info, marker),
+            )
+        return _then(
+            value, lambda v: _coerce(_transform_container(v, sub, decision, program, catalog), info, marker)
+        )
 
     # ------------------------------------------------------------------ helpers
-    def _enter_operation(self, st: RequestState, info: Any, args: dict[str, Any], cfg: PbdConfig) -> None:
+    def _enter_operation(
+        self, st: RequestState, info: Any, args: dict[str, Any], cfg: PbdConfig, *, is_mutation: bool
+    ) -> None:
         name = info.field_name
         op = cfg.mapping.operation(name) or {}
         st.operation = name
         header_purpose = _header(info.context, "X-Purpose")
         st.purpose = header_purpose or (None if cfg.require_purpose_header else op.get("purpose"))
-        st.action = str(op.get("action") or ("write" if info.parent_type.name == "Mutation" else "read"))
+        st.action = str(op.get("action") or ("write" if is_mutation else "read"))
         code = _header(info.context, "X-Program") or _benefit_plan_code(args)
         st.program = (
             code if code in cfg.mapping.programs_by_code.values() else cfg.mapping.program_for_code(code)
@@ -231,6 +242,70 @@ class PrivacyMiddleware:
         except UnavailableError:
             if cfg.fail_closed:
                 raise GraphQLError("privacy: audit store unavailable; failing closed") from None
+
+
+def _root_kind(info: Any) -> str | None:
+    """'query' / 'mutation' when the field being resolved belongs to a schema root type."""
+    schema = info.schema
+    query_type = getattr(schema, "query_type", None) or (
+        schema.get_query_type() if hasattr(schema, "get_query_type") else None
+    )
+    mutation_type = getattr(schema, "mutation_type", None) or (
+        schema.get_mutation_type() if hasattr(schema, "get_mutation_type") else None
+    )
+    parent = info.parent_type
+    if mutation_type is not None and (
+        parent is mutation_type or parent.name == getattr(mutation_type, "name", None)
+    ):
+        return "mutation"
+    if query_type is not None and (parent is query_type or parent.name == getattr(query_type, "name", None)):
+        return "query"
+    return None
+
+
+def _then(value: Any, fn: Callable[[Any], Any]) -> Any:
+    """Apply ``fn`` to a resolved value, chaining onto a Promise when the executor returns one
+    (graphene 2 / graphql-core 2, as used by openIMIS)."""
+    then = getattr(value, "then", None)
+    if callable(then):
+        return then(fn)
+    return fn(value)
+
+
+def _coerce(value: Any, info: Any, marker: str) -> Any:
+    """Fit a released value to the field's GraphQL type.
+
+    openIMIS declares many personal fields non-nullable (``firstName: String!``) and typed
+    (``dob: Date``). A denied non-null string becomes the redaction marker, a year-precision date
+    becomes the first day of that year, and a release mode whose result cannot be represented in
+    the field's type (an assertion on an Int field) is an error rather than a wrong number.
+    """
+    rt = getattr(info, "return_type", None)
+    nonnull = isinstance(rt, GraphQLNonNull)
+    base = rt.of_type if nonnull else rt
+    name = getattr(base, "name", "") or ""
+    if value is None:
+        if not nonnull:
+            return None
+        if name == "String":
+            return marker
+        raise GraphQLError(f"privacy: field denied and the schema does not allow null ({name}!)")
+    if name in ("Date", "DateTime") and isinstance(value, str):
+        try:
+            if len(value) == 4:
+                parsed: Any = dt.date(int(value), 1, 1)
+            elif len(value) == 7:
+                parsed = dt.date(int(value[:4]), int(value[5:7]), 1)
+            else:
+                parsed = dt.date.fromisoformat(value[:10])
+        except ValueError as exc:
+            raise GraphQLError("privacy: released date value is not representable") from exc
+        return dt.datetime.combine(parsed, dt.time.min) if name == "DateTime" else parsed
+    if name in ("Int", "Float") and (isinstance(value, bool | dict | list | str)):
+        raise GraphQLError(f"privacy: release mode result cannot be represented as {name}")
+    if name == "Boolean" and not isinstance(value, bool):
+        raise GraphQLError("privacy: release mode result cannot be represented as Boolean")
+    return value
 
 
 def _transform_container(

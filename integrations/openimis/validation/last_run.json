@@ -1,0 +1,399 @@
+{
+  "results": [
+    {
+      "check": "openIMIS user rights are the reference right codes",
+      "ok": true,
+      "detail": [
+        159001,
+        160001,
+        170001
+      ]
+    },
+    {
+      "check": "query succeeds through the openIMIS GraphQL view",
+      "ok": true,
+      "detail": {
+        "data": {
+          "individual": {
+            "edges": [
+              {
+                "node": {
+                  "uuid": "01a1146b-aea0-77dc-b698-a6b8120eb50e",
+                  "firstName": "***",
+                  "lastName": "***",
+                  "dob": "1990-01-01",
+                  "jsonExt": "{\"income\": true, \"address\": {\"district\": \"North\"}, \"custom_flag\": \"keep\", \"national_id\": {\"verified\": true}, \"household_size\": 4, \"disability_status\": false}"
+                }
+              },
+              {
+                "node": {
+                  "uuid": "01a1146b-aea8-7a6c-990a-4652cf3f364f",
+                  "firstName": "***",
+                  "lastName": "***",
+                  "dob": "1975-01-01",
+                  "jsonExt": "{\"income\": false, \"national_id\": {\"verified\": true}, \"household_size\": 1}"
+                }
+              },
+              {
+                "node": {
+                  "uuid": "01a1147c-fe00-78e0-b8f7-555abb6b2c4d",
+                  "firstName": "***",
+                  "lastName": "***",
+                  "dob": "1988-01-01",
+                  "jsonExt": "{\"income\": true, \"national_id\": {\"verified\": true}, \"pbd_person_token\": \"P-RDDWY5IJ\"}"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "check": "name redacted under eligibility purpose (String! fields carry the marker)",
+      "ok": true,
+      "detail": {
+        "uuid": "01a1146b-aea0-77dc-b698-a6b8120eb50e",
+        "firstName": "***",
+        "lastName": "***",
+        "dob": "1990-01-01",
+        "jsonExt": "{\"income\": true, \"address\": {\"district\": \"North\"}, \"custom_flag\": \"keep\", \"national_id\": {\"verified\": true}, \"household_size\": 4, \"disability_status\": false}"
+      }
+    },
+    {
+      "check": "dob reduced to year precision (Date field -> first day of the year)",
+      "ok": true,
+      "detail": "1990-01-01"
+    },
+    {
+      "check": "jsonExt minimised: income -> assertion, national_id -> verify-only, address -> district, custom key kept",
+      "ok": true,
+      "detail": {
+        "income": true,
+        "address": {
+          "district": "North"
+        },
+        "custom_flag": "keep",
+        "national_id": {
+          "verified": true
+        },
+        "household_size": 4,
+        "disability_status": false
+      }
+    },
+    {
+      "check": "no identifier or street in the HTTP response",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "check": "second individual: income above threshold -> false",
+      "ok": true,
+      "detail": {
+        "income": false,
+        "national_id": {
+          "verified": true
+        },
+        "household_size": 1
+      }
+    },
+    {
+      "check": "officer sees exact values under registration default purpose",
+      "ok": true,
+      "detail": {
+        "uuid": "01a1146b-aea0-77dc-b698-a6b8120eb50e",
+        "firstName": "Amina",
+        "lastName": "Example",
+        "dob": "1990-05-04",
+        "jsonExt": "{\"email\": \"amina@example.test\", \"income\": 180, \"address\": {\"street\": \"12 Market Lane\", \"district\": \"North\"}, \"custom_flag\": \"keep\", \"national_id\": {\"verified\": true}, \"household_size\": 4, \"disability_status\": \"not_certified\"}"
+      }
+    },
+    {
+      "check": "analytics_reporting refused for a case worker (ROLE_NOT_PERMITTED)",
+      "ok": true,
+      "detail": [
+        {
+          "message": "privacy: denied (ROLE_NOT_PERMITTED)",
+          "locations": [
+            {
+              "line": 1,
+              "column": 94
+            }
+          ],
+          "path": [
+            "individual",
+            "edges",
+            0,
+            "node",
+            "firstName"
+          ],
+          "extensions": {
+            "decision_id": "PD-1a1147df089-1WMWXG",
+            "reason_codes": [
+              "ROLE_NOT_PERMITTED"
+            ]
+          }
+        },
+        {
+          "message": "privacy: denied (ROLE_NOT_PERMITTED)",
+          "locations": [
+            {
+              "line": 1,
+              "column": 94
+            }
+          ],
+          "path": [
+            "individual",
+            "edges",
+            1,
+            "node",
+            "firstName"
+          ],
+          "extensions": {
+            "decision_id": "PD-1a1147df089-1WMWXG",
+            "reason_codes": [
+              "ROLE_NOT_PERMITTED"
+            ]
+          }
+        },
+        {
+          "message": "privacy: denied (ROLE_NOT_PERMITTED)",
+          "locations": [
+            {
+              "line": 1,
+              "column": 94
+            }
+          ],
+          "path": [
+            "individual",
+            "edges",
+            2,
+            "node",
+            "firstName"
+          ],
+          "extensions": {
+            "decision_id": "PD-1a1147df089-1WMWXG",
+            "reason_codes": [
+              "ROLE_NOT_PERMITTED"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "check": "C4 attributes withheld on a low-trust device, C3 kept",
+      "ok": true,
+      "detail": {
+        "address": {
+          "district": "North"
+        },
+        "custom_flag": "keep",
+        "household_size": 4
+      }
+    },
+    {
+      "check": "beneficiary status released under enrollment; nested individual minimised (name denied)",
+      "ok": true,
+      "detail": {
+        "data": {
+          "beneficiary": {
+            "edges": [
+              {
+                "node": {
+                  "uuid": "01a1146b-aeb1-7b5e-a84f-7e94a1ce2bc1",
+                  "status": "ACTIVE",
+                  "individual": {
+                    "firstName": "***",
+                    "jsonExt": "{\"custom_flag\": \"keep\", \"household_size\": 4}"
+                  }
+                }
+              },
+              {
+                "node": {
+                  "uuid": "01a1146b-aebc-70ea-8a2d-63e85aec2380",
+                  "status": "ACTIVE",
+                  "individual": {
+                    "firstName": "***",
+                    "jsonExt": "{\"household_size\": 1}"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "check": "benefitPlan query untouched",
+      "ok": true,
+      "detail": {
+        "data": {
+          "benefitPlan": {
+            "edges": [
+              {
+                "node": {
+                  "code": "CASH",
+                  "name": "Cash Assistance"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "check": "one read_access event for the Individual entity with the request's correlation id",
+      "ok": true,
+      "detail": [
+        {
+          "event_id": "AE-55S41U2J2BXD",
+          "seq": 2,
+          "ts": "2026-10-07T03:52:40.233853+00:00",
+          "event_type": "read_access",
+          "service": "openimis",
+          "actor_id": "openimis:individual",
+          "actor_role": "",
+          "actor_agency": "",
+          "purpose": "eligibility_verification",
+          "program": "cash_assistance",
+          "subject_token": null,
+          "attributes": [
+            "date_of_birth",
+            "national_id",
+            "income",
+            "household_size",
+            "disability_status",
+            "employment_status",
+            "address"
+          ],
+          "outcome": "allow",
+          "decision_id": "PD-1a1147deff9-EW3K5F",
+          "reason_codes": [],
+          "obligations": [
+            "expire_response:24h",
+            "log",
+            "no_export"
+          ],
+          "correlation_id": "val-1",
+          "details": {
+            "entity": "Individual",
+            "operation": "individual",
+            "release": {
+              "name": "deny",
+              "date_of_birth": "precision:year",
+              "national_id": "verify_only",
+              "contact": "deny",
+              "income": "assertion:below_threshold",
+              "household_size": "exact",
+              "disability_status": "assertion:eligible",
+              "employment_status": "exact",
+              "bank_account": "deny",
+              "address": "precision:district",
+              "vulnerability_attributes": "deny"
+            }
+          },
+          "prev_hash": "b769b7982f23525d0ebd6ed298b5741498e9c34421af1fa3ea6b7df10b55efef",
+          "hash": "5855333aebfb4f98330f0b3cf66deeea71f499265350a8b5419b43d379c971d9"
+        }
+      ]
+    },
+    {
+      "check": "audit chain verifies",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "checked": 13,
+        "head": "b1bebe09d3ce4851c226cfe98b0a94408ac811d10d3950f668ec6ceaf5bb0682"
+      }
+    },
+    {
+      "check": "createIndividual accepted by openIMIS",
+      "ok": true,
+      "detail": {
+        "data": {
+          "createIndividual": {
+            "clientMutationId": null
+          }
+        }
+      }
+    },
+    {
+      "check": "openIMIS stores the placeholder and the person token, never the identifier",
+      "ok": true,
+      "detail": {
+        "email": "vaulted",
+        "income": 240,
+        "national_id": "vaulted",
+        "pbd_person_token": "P-DYOUGH4S"
+      }
+    },
+    {
+      "check": "vault holds the identity and dedups it",
+      "ok": true,
+      "detail": {
+        "person_token": "P-DYOUGH4S",
+        "created": false
+      }
+    },
+    {
+      "check": "mapped fields error and are null when the control plane is down",
+      "ok": true,
+      "detail": [
+        {
+          "message": "privacy: control plane unavailable; failing closed",
+          "locations": [
+            {
+              "line": 1,
+              "column": 94
+            }
+          ],
+          "path": [
+            "individual",
+            "edges",
+            0,
+            "node",
+            "firstName"
+          ]
+        },
+        {
+          "message": "privacy: control plane unavailable; failing closed",
+          "locations": [
+            {
+              "line": 1,
+              "column": 94
+            }
+          ],
+          "path": [
+            "individual",
+            "edges",
+            1,
+            "node",
+            "firstName"
+          ]
+        },
+        {
+          "message": "privacy: control plane unavailable; failing closed",
+          "locations": [
+            {
+              "line": 1,
+              "column": 94
+            }
+          ],
+          "path": [
+            "individual",
+            "edges",
+            2,
+            "node",
+            "firstName"
+          ]
+        }
+      ]
+    }
+  ],
+  "versions": {
+    "openimis-be-core": "1.11.0",
+    "openimis-be-individual": "1.4.0",
+    "openimis-be-social_protection": "1.5.0",
+    "django": "4.2.30",
+    "graphene": "2.1.9"
+  }
+}

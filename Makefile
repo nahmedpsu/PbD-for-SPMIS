@@ -34,6 +34,10 @@ check: lint test test-policy
 demo:
 	pbd-spmis demo
 
+# Integration test inside the real openIMIS backend; see integrations/openimis/validation/README.md
+validate-openimis:
+	python integrations/openimis/validation/run_validation.py
+
 serve:
 	pbd-spmis serve all --reload
 

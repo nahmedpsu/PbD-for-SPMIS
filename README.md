@@ -128,8 +128,11 @@ same query under `registration` by a registration officer returns the full recor
 `analytics_reporting` it is refused with `ROLE_NOT_PERMITTED`. Every read is audited, the
 control plane being down fails closed, and with `vault_identifiers: true` national identifiers
 never reach the openIMIS database. Systems that cannot embed the module (legacy Java CORE-MIS,
-vendor APIs) run behind `pbd-spmis gateway`. Details, mapping and limits:
-[docs/integrations/openimis.md](docs/integrations/openimis.md).
+vendor APIs) run behind `pbd-spmis gateway`. The module is validated inside the genuine openIMIS
+backend assembly (core 1.11, individual 1.4, social protection 1.5 on PostgreSQL 16): 18 of 18
+checks pass through openIMIS's own GraphQL view. Details, mapping and limits:
+[docs/integrations/openimis.md](docs/integrations/openimis.md); outreach drafts for the openIMIS
+and GovStack communities: [docs/outreach](docs/outreach).
 
 ## The decision model in thirty seconds
 
@@ -191,8 +194,8 @@ adaptation and procurement language, not a drop-in production system. Production
 documented in [docs/deployment.md](docs/deployment.md) (OIDC/JWKS, KMS/HSM key provider,
 PostgreSQL roles per store, OPA bundle distribution, mTLS). Planned next:
 
-- Validation of `openimis-be-pbd` inside the official openIMIS Docker distribution, and a
-  relationship resolver reading `Beneficiary` rows for exact cross-program isolation.
+- A relationship resolver reading `Beneficiary` rows for exact cross-program isolation (the
+  module itself is validated inside the real openIMIS backend, see `integrations/openimis/validation`).
 - A one-off migration job that vaults identifiers already stored in `individual.json_ext`.
 - Grievance service and citizen portal flows (notice versioning, data-subject requests).
 - Offline/assisted-channel packages with scoped, short-lived tokens.

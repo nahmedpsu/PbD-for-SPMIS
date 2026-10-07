@@ -90,7 +90,14 @@ operations, low-trust downgrades on nested individuals, one audit event per enti
 vaulting, and fail-closed behaviour. `tests/test_gateway.py` does the same for the gateway with
 a fake upstream serving GraphQL connections and a FHIR Patient.
 
-Not yet verified: running inside a real openIMIS assembly (the Docker distribution could not be
-started in the authoring environment). The module touches openIMIS only through graphene's
-middleware contract, Django's `AppConfig`, `ModuleConfiguration.get_or_default` and
-`bind_service_signal`, all guarded so their absence is tolerated.
+**Verified inside real openIMIS.** `integrations/openimis/validation/run_validation.py` boots
+the genuine `openimis-be_py` assembly with the published modules (core 1.11.0, individual 1.4.0,
+social_protection 1.5.0, calculation, workflow, tasks_management, location and their migration
+dependencies) on PostgreSQL 16 with openIMIS's database scripts, seeds roles with the reference
+right codes, and issues GraphQL requests through openIMIS's own view with openIMIS-issued JWTs.
+Result: 18 of 18 checks pass (Django 4.2.30, graphene 2.1.9). The run surfaced four
+openIMIS-specific behaviours that are now built into the module and its unit tests: non-nullable
+personal fields receive a redaction marker instead of null, `Date` fields receive date values at
+the released precision, graphene 2 promises are chained, and the middleware must be last in the
+chain because of openIMIS's tracer. The recipe and the detailed findings are in
+[`integrations/openimis/validation/README.md`](../../integrations/openimis/validation/README.md).

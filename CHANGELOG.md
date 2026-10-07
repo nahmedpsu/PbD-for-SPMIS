@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1 (2026-10-07)
+
+- `openimis-be-pbd` validated inside the real openIMIS backend assembly (core 1.11.0, individual
+  1.4.0, social_protection 1.5.0, Django 4.2, graphene 2, PostgreSQL 16): 18/18 checks through
+  openIMIS's own GraphQL view. Runner, settings component and recipe in
+  `integrations/openimis/validation`.
+- Module hardening from that run: redaction marker for denied non-nullable fields, typed
+  coercion for `Date`/`DateTime`/numeric fields, graphene 2 promise chaining, middleware ordering
+  guidance; `redaction_marker` configuration key.
+- Outreach package for the openIMIS community and GovStack in `docs/outreach`.
+
 ## 0.2.0 (2026-10-07)
 
 Integration layer for existing MIS products.

@@ -10,6 +10,7 @@ so that a client never needs the catalogue YAML files.
 
 from __future__ import annotations
 
+import datetime
 from typing import Any
 
 
@@ -45,6 +46,12 @@ def assert_for(
 def precision_for(value: Any, level: str) -> Any:
     if isinstance(value, list):
         return [precision_for(v, level) for v in value]
+    if isinstance(value, datetime.date):  # datetime is a date subclass
+        if level == "year":
+            return datetime.date(value.year, 1, 1)
+        if level == "month":
+            return datetime.date(value.year, value.month, 1)
+        return value
     if isinstance(value, dict):
         return {level: value.get(level)}
     if isinstance(value, str) and level == "year":

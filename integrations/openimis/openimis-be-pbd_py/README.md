@@ -28,8 +28,12 @@ optional identifier vaulting, with no change to the existing openIMIS modules.
 3. Add the middleware to the graphene settings of `openimis-be_py`:
 
    ```python
-   GRAPHENE = {"MIDDLEWARE": ["pbd.middleware.PrivacyMiddleware", "openIMIS.tracer.TracerMiddleware", ...]}
+   GRAPHENE["MIDDLEWARE"] = [*GRAPHENE["MIDDLEWARE"], "pbd.middleware.PrivacyMiddleware"]
    ```
+
+   The privacy middleware goes **last** so that its policy errors reach the client intact
+   (openIMIS's tracer middleware re-wraps exceptions). The simplest way is a settings component
+   selected by `MODE`, as `integrations/openimis/validation/validation_settings.py` shows.
 
 4. Configure the module (ModuleConfiguration for `pbd`, or environment variables):
 
@@ -43,6 +47,7 @@ optional identifier vaulting, with no change to the existing openIMIS modules.
    | `fail_closed` | `true` | error on control-plane unavailability |
    | `audit_reads` | `true` | emit `read_access` events |
    | `vault_identifiers` | `false` | move identifiers to the vault on create/update |
+   | `redaction_marker` | `***` | value returned for denied attributes whose GraphQL field is non-nullable (`firstName: String!`) |
 
 5. Have the frontend (or API clients) send `X-Purpose` and, where relevant, `X-Program`,
    `X-Case-ID` and `X-Device-Trust`. Without `X-Purpose` the mapping's per-operation default is
@@ -58,6 +63,16 @@ optional identifier vaulting, with no change to the existing openIMIS modules.
 - the default purpose and action for each GraphQL operation;
 - benefit plan codes to catalogue programs;
 - the vaulting rules.
+
+## Validated against real openIMIS
+
+`integrations/openimis/validation/run_validation.py` runs the module inside the genuine
+`openimis-be_py` assembly with openIMIS core 1.11.0, individual 1.4.0 and social_protection 1.5.0
+on PostgreSQL 16 (Django 4.2, graphene 2): 18 of 18 checks pass, covering minimised views per
+purpose through openIMIS's own GraphQL view and JWTs, default purposes, role derivation from
+right codes, pass-through, low-trust downgrades, read auditing, identifier vaulting and
+fail-closed behaviour. See the validation README for the recipe and for what real openIMIS
+taught the module (non-null fields, typed fields, graphene 2 promises, middleware order).
 
 ## Limitations in this version
 

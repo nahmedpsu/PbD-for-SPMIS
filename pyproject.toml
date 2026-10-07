@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pbd-spmis"
-version = "0.2.0"
+version = "0.2.1"
 description = "Privacy-by-Design control plane and reference Social Protection MIS: purpose-bound authorization, selective disclosure, tokenized identity, tamper-evident audit."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -43,7 +43,7 @@ dev = [
 ]
 postgres = ["psycopg[binary]>=3.1"]
 # openIMIS backend module (graphene middleware) and the privacy gateway (GraphQL parsing)
-openimis = ["graphene>=3", "django>=4.2"]
+openimis = ["graphene>=2.1", "django>=4.2"]
 gateway = ["graphql-core>=3.2"]
 
 [project.scripts]
@@ -79,3 +79,5 @@ ignore = ["S101", "B008"]
 "src/pbd_spmis/common/errors.py" = ["N818"]
 "src/pbd_spmis/cli.py" = ["S603"]
 "tests/test_openimis_module.py" = ["N805"]
+# integration runner: seeded test credentials, long assertion lines
+"integrations/openimis/validation/*" = ["S106", "E501", "F841"]

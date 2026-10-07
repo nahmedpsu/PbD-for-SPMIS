@@ -1,0 +1,52 @@
+{
+    "modules": [
+        {
+            "name": "core",
+            "pip": "openimis-be-core==1.11.0"
+        },
+        {
+            "name": "individual",
+            "pip": "openimis-be-individual==1.4.0"
+        },
+        {
+            "name": "calculation",
+            "pip": "openimis-be-calculation==1.10.0"
+        },
+        {
+            "name": "workflow",
+            "pip": "openimis-be-workflow==1.1.0"
+        },
+        {
+            "name": "tasks_management",
+            "pip": "openimis-be-tasks_management==1.5.0"
+        },
+        {
+            "name": "location",
+            "pip": "openimis-be-location==1.11.0"
+        },
+        {
+            "name": "medical",
+            "pip": "openimis-be-medical==1.11.0"
+        },
+        {
+            "name": "medical_pricelist",
+            "pip": "openimis-be-medical_pricelist==1.8.0"
+        },
+        {
+            "name": "product",
+            "pip": "openimis-be-product==1.10.0"
+        },
+        {
+            "name": "contribution_plan",
+            "pip": "openimis-be-contribution-plan==1.11.0"
+        },
+        {
+            "name": "social_protection",
+            "pip": "openimis-be-social_protection==1.5.0"
+        },
+        {
+            "name": "pbd",
+            "pip": "openimis-be-pbd==0.1.0"
+        }
+    ]
+}

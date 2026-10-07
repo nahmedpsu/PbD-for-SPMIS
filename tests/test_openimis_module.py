@@ -255,3 +255,66 @@ def test_fail_closed_when_control_plane_unreachable():
     res = run(INDIVIDUAL_QUERY, fake_request(headers={"X-Purpose": "registration"}), cfg)
     assert res.errors and "failing closed" in str(res.errors[0])
     assert res.data["individual"][0]["firstName"] is None
+
+
+# ---------------------------------------------------------------------- behaviours learnt from real openIMIS
+
+
+class StrictIndividualGQLType(graphene.ObjectType):
+    """Shaped like openIMIS's real type: non-null strings, a Date, a non-null JSON container."""
+
+    class Meta:
+        name = "IndividualGQLType"  # the mapping keys on openIMIS's type name
+
+    uuid = graphene.String()
+    first_name = graphene.NonNull(graphene.String)
+    last_name = graphene.NonNull(graphene.String)
+    dob = graphene.Date()
+    json_ext = graphene.NonNull(GenericScalar)
+
+
+class StrictQuery(graphene.ObjectType):
+    individual = graphene.List(StrictIndividualGQLType)
+
+    def resolve_individual(root, info):
+        import datetime
+
+        return [
+            SimpleNamespace(
+                uuid="3333",
+                first_name="Amina",
+                last_name="Example",
+                dob=datetime.date(1990, 5, 4),
+                json_ext={"national_id": "NID-1001", "income": 180},
+            )
+        ]
+
+
+STRICT_SCHEMA = graphene.Schema(query=StrictQuery, auto_camelcase=True)
+
+
+def test_non_null_and_typed_fields_as_in_real_openimis(module):
+    res = STRICT_SCHEMA.execute(
+        "query { individual { uuid firstName lastName dob jsonExt } }",
+        context_value=fake_request(headers={"X-Purpose": "eligibility_verification"}),
+        middleware=[PrivacyMiddleware(module)],
+    )
+    assert res.errors is None, res.errors
+    node = res.data["individual"][0]
+    assert node["firstName"] == "***" and node["lastName"] == "***"  # String! cannot be null
+    assert node["dob"] == "1990-01-01"  # Date field, year precision
+    assert node["jsonExt"] == {"national_id": {"verified": True}, "income": True}
+
+
+def test_promise_results_are_transformed():
+    from pbd.middleware import _then
+
+    class FakePromise:
+        def __init__(self, value):
+            self.value = value
+
+        def then(self, fn):
+            return FakePromise(fn(self.value))
+
+    assert _then(FakePromise(5), lambda v: v + 1).value == 6
+    assert _then(5, lambda v: v + 1) == 6

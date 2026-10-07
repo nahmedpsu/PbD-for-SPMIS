@@ -180,7 +180,7 @@ READ_ROLES = {"AUDITOR", "PRIVACY_ADMIN", "SUPERVISOR"}
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PbD-SPMIS Audit Store", version="0.2.0")
+    app = FastAPI(title="PbD-SPMIS Audit Store", version="0.2.1")
     install_error_handlers(app)
 
     @app.get("/healthz")

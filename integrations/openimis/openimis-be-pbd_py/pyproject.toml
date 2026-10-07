@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 license = { text = "AGPL-3.0-or-later" }
 dependencies = [
   "pbd-spmis>=0.1.0",
-  "graphene>=3",
+  "graphene>=2.1",
   "django>=4.2",
   "pyyaml>=6",
 ]

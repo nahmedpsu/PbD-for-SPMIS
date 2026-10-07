@@ -38,6 +38,9 @@ DEFAULT_CFG: dict[str, Any] = {
     "vault_identifiers": False,
     # Agency name reported for actors.
     "agency": "SOCIAL_PROTECTION_AGENCY",
+    # Value returned for denied attributes whose GraphQL field is non-nullable (openIMIS declares
+    # firstName/lastName as String!).
+    "redaction_marker": "***",
 }
 
 
@@ -54,6 +57,7 @@ class PbdConfig:
     audit_reads: bool
     vault_identifiers: bool
     agency: str
+    redaction_marker: str = "***"
     mapping: Mapping = field(default=None)  # type: ignore[assignment]
     control_plane: PrivacyControlPlane = field(default=None)  # type: ignore[assignment]
 
@@ -78,6 +82,7 @@ class PbdConfig:
             audit_reads=bool(merged["audit_reads"]),
             vault_identifiers=bool(merged["vault_identifiers"]),
             agency=str(merged["agency"]),
+            redaction_marker=str(merged.get("redaction_marker", "***")),
         )
         c.mapping = mapping or Mapping.load(c.mapping_file)
         c.control_plane = control_plane or PrivacyControlPlane(
